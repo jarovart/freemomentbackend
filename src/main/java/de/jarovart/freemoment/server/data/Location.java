@@ -7,6 +7,7 @@ package de.jarovart.freemoment.server.data;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import lombok.Data;
 
 /**
@@ -23,11 +24,21 @@ public class Location {
     private Long id;
 
     private String name;
-    private String address;
+    private String description;
     private LocalDateTime date;
     private String imageUrl;
+    private Double latitude;
+    private Double longtitude;
 
     //Need for DB
     public Location() {
+    }
+    
+    @PrePersist
+    public void prePersist() {
+        if (date == null) {
+            date = LocalDateTime.now();
+            System.out.println("Location.prePersist() - created new date: "+date.toString());
+        }
     }
 }
