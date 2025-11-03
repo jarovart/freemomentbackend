@@ -28,7 +28,7 @@ public class Location {
     private LocalDateTime date;
     private String imageUrl;
     private Double latitude;
-    private Double longtitude;
+    private Double longitude;
 
     //Need for DB
     public Location() {
