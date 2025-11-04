@@ -48,7 +48,9 @@ public class LocationController {
             @RequestParam double minLng,
             @RequestParam double maxLng) {
         System.out.println("within /api/bounds wurde aufgerufen");
-        return repository.findByLatitudeBetweenAndLongitudeBetween(
+        List<Location> locations =repository.findByLatitudeBetweenAndLongitudeBetween(
                 minLat, maxLat, minLng, maxLng);
+        locations.stream().forEach(l -> System.out.println(l.toString()));
+        return locations;
     }
 }

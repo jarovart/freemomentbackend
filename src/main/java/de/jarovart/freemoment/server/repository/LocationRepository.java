@@ -6,6 +6,8 @@ package de.jarovart.freemoment.server.repository;
 import de.jarovart.freemoment.server.data.Location;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
@@ -17,4 +19,11 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
         double minLat, double maxLat,
         double minLng, double maxLng
     );
+    
+    @Query("SELECT l FROM Location l WHERE l.latitude BETWEEN :minLat AND :maxLat AND l.longitude BETWEEN :minLng AND :maxLng")
+    List<Location> findWithinBounds(
+      @Param("minLat") double minLat,
+      @Param("maxLat") double maxLat,
+      @Param("minLng") double minLng,
+      @Param("maxLng") double maxLng);
 }
