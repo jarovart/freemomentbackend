@@ -33,6 +33,14 @@ public class Location {
     //Need for DB
     public Location() {
     }
+
+    public Location(String name, String description, LocalDateTime date, Double latitude, Double longitude) {
+        this.name = name;
+        this.description = description;
+        this.date = date;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
     
     @PrePersist
     public void prePersist() {
