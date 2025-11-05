@@ -21,12 +21,14 @@ public class DbSeeding {
     @Bean
     public CommandLineRunner init(LocationRepository locationRepository) {
         return args -> {
-            locationRepository.save(new Location("Bärlin", "berlinbär", 
-                    LocalDateTime.now(),  52.52, 13.4));
-            locationRepository.save(new Location("Mauer", "berlinmauer", 
-                    LocalDateTime.now(),  52.51, 13.42));
-            locationRepository.save(new Location("Stand", "berlinstand", 
-                    LocalDateTime.now(),  52.53, 13.39));
+            locationRepository.save(new Location("NordMauer", "berlinmauer", 
+                    LocalDateTime.now(),  53.23994798679545, 8.795070648193361));
+            locationRepository.save(new Location("OstBärlin", "berlinbär", 
+                    LocalDateTime.now(),  53.22710439096767, 8.808116912841799));
+            locationRepository.save(new Location("WestSide", "berlinstand", 
+                    LocalDateTime.now(),  53.22957066025697, 8.766231536865236));
+            locationRepository.save(new Location("SüdStand", "berlinstand", 
+                    LocalDateTime.now(),  53.20191976452034, 8.760223388671877));
         };
     }
 }
