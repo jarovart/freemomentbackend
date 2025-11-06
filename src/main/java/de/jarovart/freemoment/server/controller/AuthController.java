@@ -7,6 +7,7 @@ package de.jarovart.freemoment.server.controller;
 import de.jarovart.freemoment.server.data.AppUser;
 import de.jarovart.freemoment.server.repository.UserRepository;
 import de.jarovart.freemoment.server.services.JwtService;
+import de.jarovart.freemoment.server.services.PasswordResetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,15 @@ public class AuthController {
     
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
-  private final JwtService jwtService;
+  private final JwtService jwtService; 
+  private final PasswordResetService passwordResetService;
 
-  public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+  public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, 
+          JwtService jwtService, PasswordResetService passwordResetService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
+    this.passwordResetService = passwordResetService;
   }
 
   @PostMapping("/register")
@@ -56,5 +60,17 @@ public class AuthController {
     String token = jwtService.generateToken(u.getUsername(), Map.of("roles", String.join(",", u.getRoles())));
     return ResponseEntity.ok(Map.of("token", token, "username", u.getUsername()));
   }
+  
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
+        passwordResetService.sendResetLink(request.get("email"));
+        return ResponseEntity.ok("Reset link sent");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+        passwordResetService.resetPassword(request.get("token"), request.get("newPassword"));
+        return ResponseEntity.ok("Password updated");
+    }
 }
 
