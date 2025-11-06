@@ -15,13 +15,13 @@ import org.springframework.data.repository.query.Param;
  */
 public interface LocationRepository extends JpaRepository<Location, Long> {
     
-    List<Location> findByLatitudeBetweenAndLongitudeBetween(
+    public List<Location> findByLatitudeBetweenAndLongitudeBetween(
         double minLat, double maxLat,
         double minLng, double maxLng
     );
     
     @Query("SELECT l FROM Location l WHERE l.latitude BETWEEN :minLat AND :maxLat AND l.longitude BETWEEN :minLng AND :maxLng")
-    List<Location> findWithinBounds(
+    public List<Location> findWithinBounds(
       @Param("minLat") double minLat,
       @Param("maxLat") double maxLat,
       @Param("minLng") double minLng,
