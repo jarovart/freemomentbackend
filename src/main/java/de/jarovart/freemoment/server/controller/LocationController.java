@@ -28,7 +28,7 @@ public class LocationController {
     @Autowired
     private LocationRepository repository;
 
-    @PostMapping
+    @PostMapping("/createLocation")
     public Location createLocation(@RequestBody Location location) {
         System.out.println(location.toString());
         location.setId(null);

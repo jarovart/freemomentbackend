@@ -7,7 +7,9 @@ package de.jarovart.freemoment.server.configurations;
 import de.jarovart.freemoment.server.auth.JwtAuthFilter;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.UserService;
+import java.util.List;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +17,9 @@ import org.springframework.security.web.*;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  *
@@ -44,6 +49,8 @@ public class SecurityConfiguration {
                 "/api/locations",
                 "/api/locations/within**",
                 "/h2-console/**").permitAll()
+        .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createLocation")
+            .permitAll() // 💡 <- wichtig für React
         .anyRequest().authenticated()
     .and()
       .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -53,6 +60,19 @@ public class SecurityConfiguration {
 
     return http.build();
   }
+  
+  // 🔧 CORS-Setup für React
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React URL
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
