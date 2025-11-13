@@ -8,9 +8,9 @@ on:
 
 env:
   AWS_REGION: eu-central-1             # z. B. Frankfurt
-  ECR_REPOSITORY: my-springboot-app    # Name deines ECR-Repos
-  ECS_CLUSTER: my-springboot-cluster
-  ECS_SERVICE: my-springboot-service
+  ECR_REPOSITORY: freemomentrepo    # Name deines ECR-Repos
+  ECS_CLUSTER: freemomentCluster
+  ECS_SERVICE: freemomentService
 
 jobs:
   build-and-deploy:
