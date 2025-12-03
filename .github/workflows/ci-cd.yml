@@ -32,37 +32,37 @@ jobs:
       - name: Run tests
         run: mvn test
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v4
+ #       with:
+ #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+ #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #        aws-region: ${{ env.AWS_REGION }}
+#
+#      - name: Log in to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      - name: Build, tag, and push image to Amazon ECR
+#        run: |
+#          IMAGE_TAG=${{ github.sha }}
+#          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+#          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+#          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+#        env:
+#          AWS_REGION: ${{ env.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+  #    - name: Render ECS task definition
+  #      run: |
+  #        IMAGE_TAG=${{ github.sha }}
+  #        sed "s|<IMAGE>|${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG|; \
+ #              s|\${ECS_EXECUTION_ROLE_ARN}|${{ secrets.ECS_EXECUTION_ROLE_ARN }}|" \
+ #              ecs-task-def-template.json > ecs-task-def.json
 
-      - name: Build, tag, and push image to Amazon ECR
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-
-      - name: Render ECS task definition
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          sed "s|<IMAGE>|${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG|; \
-               s|\${ECS_EXECUTION_ROLE_ARN}|${{ secrets.ECS_EXECUTION_ROLE_ARN }}|" \
-               ecs-task-def-template.json > ecs-task-def.json
-
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ecs-task-def.json
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+ #     - name: Deploy to Amazon ECS
+ #       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+  #      with:
+   #       task-definition: ecs-task-def.json
+   #       service: ${{ env.ECS_SERVICE }}
+   #       cluster: ${{ env.ECS_CLUSTER }}
+    #      wait-for-service-stability: true
