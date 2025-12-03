@@ -22,30 +22,36 @@ import lombok.Data;
 @Entity
 public class Location {
 
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String title;
     private String description;
     private LocalDateTime date;
-    private String imageUrl;
     private Double latitude;
     private Double longitude;
+    private String thumbnailUrl;
+    private String imageUrl;
+    private String locationUser;
 
     //Need for DB
     public Location() {
     }
 
-    public Location(String name, String description, LocalDateTime date, Double latitude, Double longitude) {
-        this.name = name;
+    public Location(String title, String description, LocalDateTime date, Double latitude, Double longitude,
+                    String thumbnailUrl, String imageUrl, String locationUser) {
+        this.title = title;
         this.description = description;
         this.date = date;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.thumbnailUrl = thumbnailUrl;
+        this.imageUrl = imageUrl;
+        this.locationUser = locationUser;
     }
-    
+
+
     @PrePersist
     public void prePersist() {
         if (date == null) {

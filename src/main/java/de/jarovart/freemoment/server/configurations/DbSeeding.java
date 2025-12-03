@@ -22,13 +22,17 @@ public class DbSeeding {
     public CommandLineRunner init(LocationRepository locationRepository) {
         return args -> {
             locationRepository.save(new Location("NordMauer", "berlinmauer", 
-                    LocalDateTime.now(),  53.23994798679545, 8.795070648193361));
+                    LocalDateTime.now(),  53.23994798679545, 8.795070648193361,
+                    "thumbnailUrl", "imageUrl", "user1"));
             locationRepository.save(new Location("OstBärlin", "berlinbär", 
-                    LocalDateTime.now(),  53.22710439096767, 8.808116912841799));
+                    LocalDateTime.now(),  53.22710439096767, 8.808116912841799,
+                    "thumbnailUrl", "imageUrl", "user2"));
             locationRepository.save(new Location("WestSide", "berlinstand", 
-                    LocalDateTime.now(),  53.22957066025697, 8.766231536865236));
+                    LocalDateTime.now(),  53.22957066025697, 8.766231536865236,
+                    "thumbnailUrl", "imageUrl", "user3"));
             locationRepository.save(new Location("SüdStand", "berlinstand", 
-                    LocalDateTime.now(),  53.20191976452034, 8.760223388671877));
+                    LocalDateTime.now(),  53.20191976452034, 8.760223388671877,
+                    "thumbnailUrl", "imageUrl", "user4"));
         };
     }
 }

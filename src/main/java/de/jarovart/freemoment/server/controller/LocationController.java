@@ -6,7 +6,11 @@ package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.data.Location;
 import de.jarovart.freemoment.server.repository.LocationRepository;
+
+import java.time.LocalDateTime;
 import java.util.List;
+
+import de.jarovart.freemoment.server.services.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,22 +27,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/locations")
 //@CrossOrigin(origins = "http://localhost:3000") // wichtig für React
+@CrossOrigin(origins = "*") // wichtig für Flutter
 public class LocationController {
-    
+
     @Autowired
-    private LocationRepository repository;
+    private LocationService locationService;
 
     @PostMapping("/createLocation")
     public Location createLocation(@RequestBody Location location) {
         System.out.println(location.toString());
-        location.setId(null);
-        return repository.save(location);
+        return locationService.createLocation(location);
     }
 
     @GetMapping
-    public List<Location> getAllLocations() {
+    public List<LocationBaseDTO> getAllLocations() {
         System.out.println("GET /api/locations wurde aufgerufen");
-        return repository.findAll();
+        return locationService.getAllLocations().stream().map(loc -> new LocationBaseDTO(loc.getId(),
+                loc.getTitle(),
+                loc.getDate(),
+                loc.getLatitude(),
+                loc.getLongitude(),
+                loc.getThumbnailUrl())).toList();
     }
     
     @GetMapping("/within")
@@ -48,9 +57,15 @@ public class LocationController {
             @RequestParam double minLng,
             @RequestParam double maxLng) {
         System.out.println("within /api/bounds wurde aufgerufen");
-        List<Location> locations =repository.findByLatitudeBetweenAndLongitudeBetween(
-                minLat, maxLat, minLng, maxLng);
-        locations.stream().forEach(l -> System.out.println(l.toString()));
-        return locations;
+        return locationService.getLocationsWithinBounds(minLat, maxLat, minLng, maxLng);
     }
+
+    public record LocationBaseDTO(
+            Long id,
+            String title,
+            LocalDateTime date,
+            Double latitude,
+            Double longitude,
+            String thumbnailUrl
+    ) {}
 }
