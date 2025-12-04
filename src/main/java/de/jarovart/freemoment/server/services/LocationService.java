@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.services;
 
+import de.jarovart.freemoment.server.controller.LocationController;
 import de.jarovart.freemoment.server.data.Location;
 import de.jarovart.freemoment.server.repository.LocationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,20 +25,20 @@ public class LocationService {
     }
 
     public List<Location> getAllLocations() {
-         List<Location> locationList = repository.findAll();
-
-         return locationList;
+         return repository.findAll();
     }
 
     public List<Location> getLocationsWithinBounds(
-             double minLat,
-            double maxLat,
-             double minLng,
-             double maxLng) {
+             double minLat,  double maxLat, double minLng, double maxLng) {
         System.out.println("within /api/bounds wurde aufgerufen");
-        List<Location> locations =repository.findByLatitudeBetweenAndLongitudeBetween(
+        return repository.findByLatitudeBetweenAndLongitudeBetween(
                 minLat, maxLat, minLng, maxLng);
-        locations.stream().forEach(l -> System.out.println(l.toString()));
-        return locations;
+    }
+
+    public List<Location> search(String query) {
+        if (query == null || query.isBlank() || query.length() < 3) {
+            return List.of();
+        }
+        return repository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query);
     }
 }

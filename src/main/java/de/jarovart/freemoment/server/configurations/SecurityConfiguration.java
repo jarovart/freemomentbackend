@@ -47,6 +47,7 @@ public class SecurityConfiguration {
       .authorizeHttpRequests()
         .requestMatchers("/api/auth/**",
                 "/api/locations",
+                "/api/locations/search**",
                 "/api/locations/within**",
                 "/h2-console/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createLocation")

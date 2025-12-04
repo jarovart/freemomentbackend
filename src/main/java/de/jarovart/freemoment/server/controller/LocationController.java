@@ -42,12 +42,7 @@ public class LocationController {
     @GetMapping
     public List<LocationBaseDTO> getAllLocations() {
         System.out.println("GET /api/locations wurde aufgerufen");
-        return locationService.getAllLocations().stream().map(loc -> new LocationBaseDTO(loc.getId(),
-                loc.getTitle(),
-                loc.getDate(),
-                loc.getLatitude(),
-                loc.getLongitude(),
-                loc.getThumbnailUrl())).toList();
+        return transformToDTOs(locationService.getAllLocations());
     }
     
     @GetMapping("/within")
@@ -58,6 +53,23 @@ public class LocationController {
             @RequestParam double maxLng) {
         System.out.println("within /api/bounds wurde aufgerufen");
         return locationService.getLocationsWithinBounds(minLat, maxLat, minLng, maxLng);
+    }
+
+    @GetMapping("/search")
+    public List<LocationBaseDTO> search(@RequestParam String query) {
+        System.out.println("GET /search wurde aufgerufen");
+        return transformToDTOs(locationService.search(query));
+    }
+
+    private List<LocationBaseDTO> transformToDTOs(List<Location> locations) {
+        return locations.stream().map(loc -> new LocationBaseDTO(
+                loc.getId(),
+                loc.getTitle(),
+                loc.getDate(),
+                loc.getLatitude(),
+                loc.getLongitude(),
+                loc.getThumbnailUrl()
+        )).toList();
     }
 
     public record LocationBaseDTO(
