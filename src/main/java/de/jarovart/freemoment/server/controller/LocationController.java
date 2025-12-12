@@ -34,9 +34,9 @@ public class LocationController {
     private LocationService locationService;
 
     @PostMapping("/createLocation")
-    public Location createLocation(@RequestBody Location location) {
-        System.out.println(location.toString());
-        return locationService.createLocation(location);
+    public LocationBaseDTO createLocation(@RequestBody Location location) {
+        System.out.println("Create Location: "+location.toString());
+        return transformToDTO(locationService.createLocation(location));
     }
 
     @GetMapping
@@ -62,14 +62,17 @@ public class LocationController {
     }
 
     private List<LocationBaseDTO> transformToDTOs(List<Location> locations) {
-        return locations.stream().map(loc -> new LocationBaseDTO(
-                loc.getId(),
-                loc.getTitle(),
-                loc.getDate(),
-                loc.getLatitude(),
-                loc.getLongitude(),
-                loc.getThumbnailUrl()
-        )).toList();
+        return locations.stream().map(this::transformToDTO).toList();
+    }
+
+    private LocationBaseDTO transformToDTO(Location location) {
+        return new LocationBaseDTO(
+                location.getId(),
+                location.getTitle(),
+                location.getDate(),
+                location.getLatitude(),
+                location.getLongitude(),
+                location.getThumbnailUrl());
     }
 
     public record LocationBaseDTO(
