@@ -69,6 +69,7 @@ public class LocationController {
         return new LocationBaseDTO(
                 location.getId(),
                 location.getTitle(),
+                location.getDescription(),
                 location.getDate(),
                 location.getLatitude(),
                 location.getLongitude(),
@@ -78,6 +79,7 @@ public class LocationController {
     public record LocationBaseDTO(
             Long id,
             String title,
+            String description,
             LocalDateTime date,
             Double latitude,
             Double longitude,
