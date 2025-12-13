@@ -13,6 +13,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.*;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -40,25 +42,25 @@ public class SecurityConfiguration {
   public SecurityFilterChain filterChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
     JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, userService);
 
-    http
-      .csrf().disable()
-      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-    .and()
-      .authorizeHttpRequests()
-        .requestMatchers("/api/auth/**",
-                "/api/locations",
-                "/api/locations/createLocation",
-                "/api/locations/search**",
-                "/api/locations/within**",
-                "/h2-console/**").permitAll()
-        .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation")
-            .permitAll() // 💡 <- wichtig für React
-        .anyRequest().authenticated()
-    .and()
-      .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-    // H2-Console erlaubt (dev)
-    http.headers().frameOptions().disable();
+    http.csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**",
+                    "/api/locations",
+                    "/api/locations/createLocation",
+                    "/api/locations/search**",
+                    "/api/locations/within**",
+                    "/h2-console/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation")
+                .permitAll() // wichtig für React / CORS
+                .anyRequest()
+                .authenticated())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .headers(headers ->
+                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+            );
 
     return http.build();
   }

@@ -62,12 +62,13 @@ public class DbSeeding {
                     "thumbnailUrl13", "imageUrl13", "user13"));
             locationRepository.save(new Location("magemall", "stall",
                     LocalDateTime.now(),  53.195043047897364, 8.599898620068377,
-                    "thumbnailUrl12", "imageUrl12", "user12"));
+                    "thumbnailUrl14", "imageUrl14", "user14"));
             locationRepository.save(new Location("beckedorf", "torf",
                     LocalDateTime.now(),  53.19667599779441, 8.598824600121679,
-                    "thumbnailUrl12", "imageUrl12", "user12"));
-
-
+                    "thumbnailUrl15", "imageUrl15", "user15"));
+            locationRepository.save(new Location("beckedorfsolo", "engagement",
+                    LocalDateTime.now(),  53.2064054841533, 8.590285582959002,
+                    "thumbnailUrl16", "imageUrl16", "user16"));
         };
     }
 }
