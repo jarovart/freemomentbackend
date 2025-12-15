@@ -7,21 +7,23 @@ package de.jarovart.freemoment.server.configurations;
 import de.jarovart.freemoment.server.auth.JwtAuthFilter;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.UserService;
-import java.util.List;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.web.*;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  *
@@ -30,42 +32,41 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfiguration {
 
-  private final JwtService jwtService;
-  private final UserService userService;
+    private final JwtService jwtService;
+    private final UserService userService;
 
-  public SecurityConfiguration(JwtService jwtService, UserService userService) {
-    this.jwtService = jwtService;
-    this.userService = userService;
-  }
+    public SecurityConfiguration(JwtService jwtService, UserService userService) {
+        this.jwtService = jwtService;
+        this.userService = userService;
+    }
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
-    JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, userService);
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
+        JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, userService);
 
-    http.csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**",
-                    "/api/locations",
-                    "/api/locations/createLocation",
-                    "/api/locations/search**",
-                    "/api/locations/within**",
-                    "/h2-console/**")
-                .permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation")
-                .permitAll() // wichtig für React / CORS
-                .anyRequest()
-                .authenticated())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers(headers ->
-                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-            );
+        return http.csrf(AbstractHttpConfigurer::disable)
+                   .sessionManagement(session ->
+                                              session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                   .authorizeHttpRequests(auth -> auth
+                           .requestMatchers("/api/auth/**",
+                                            "/api/locations",
+                                            "/api/locations/createLocation",
+                                            "/api/locations/search**",
+                                            "/api/locations/within**",
+                                            "/api/locations/withinWithTime**",
+                                            "/h2-console/**")
+                           .permitAll()
+                           .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation")
+                           .permitAll() // wichtig für React / CORS
+                           .anyRequest()
+                           .authenticated())
+                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                   .headers(headers ->
+                                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                   .build();
+    }
 
-    return http.build();
-  }
-  
-  // 🔧 CORS-Setup für React
+    // 🔧 CORS-Setup für React
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -78,8 +79,8 @@ public class SecurityConfiguration {
         return source;
     }
 
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    return config.getAuthenticationManager();
-  }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 }

@@ -4,15 +4,16 @@
  */
 package de.jarovart.freemoment.server.services;
 
-import de.jarovart.freemoment.server.data.AppUser;
+import de.jarovart.freemoment.server.data.entities.AppUser;
 import de.jarovart.freemoment.server.repository.UserRepository;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  *
@@ -29,7 +30,7 @@ public class PasswordResetService {
 
     public void sendResetLink(String email) {
         AppUser user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                                     .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = UUID.randomUUID().toString();
         user.setResetToken(token);
@@ -47,7 +48,7 @@ public class PasswordResetService {
 
     public void resetPassword(String token, String newPassword) {
         AppUser user = userRepository.findByResetToken(token)
-            .orElseThrow(() -> new RuntimeException("Invalid token"));
+                                     .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expired");
