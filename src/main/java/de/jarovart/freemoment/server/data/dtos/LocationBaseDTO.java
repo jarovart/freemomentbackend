@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class LocationBaseDTO {
 
+    private static int likedTest = 0;
     @NotNull
     private Long id;
     private String title;
@@ -44,6 +45,6 @@ public class LocationBaseDTO {
         this.createdUserId = createdUserId;
         this.createdUsername = createdUsername;
         this.joinedUserCount = joinedUserCount;
-        this.likedUserCount = likedUserCount;
+        this.likedUserCount = likedTest++;
     }
 }
