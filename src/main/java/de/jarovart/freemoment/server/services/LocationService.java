@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class LocationService {
 
     @Autowired
@@ -53,7 +54,6 @@ public class LocationService {
                                   .getContent());
     }
 
-    @Transactional(readOnly = true)
     public Optional<LocationFullDTO> getLocationById(Long id) {
         Optional<Location> location = locationRepository.findByIdWithUsers(id);
         return location.map(LocationMapper::toFullDTO);
