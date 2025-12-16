@@ -70,7 +70,7 @@ public class LocationService {
     public List<LocationBaseDTO> getLocationsWithinBoundsAndRange(
             double minLat, double maxLat, double minLng, double maxLng, LocalDateTime rangeStart,
             LocalDateTime rangeEnd) {
-        if (rangeStart == null || rangeEnd == null || !rangeStart.isBefore(rangeEnd)
+        if (rangeStart == null || rangeEnd == null || !(rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd))
                 || isInvalidBounds(minLat, maxLat, minLng, maxLng)) {
             return List.of();
         }
