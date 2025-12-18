@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                    .authorizeHttpRequests(auth -> auth
                            .requestMatchers("/api/auth/**",
                                             "/api/locations",
+                                            "/api/locations/findById**",
                                             "/api/locations/createLocation",
                                             "/api/locations/search**",
                                             "/api/locations/within**",

@@ -78,9 +78,9 @@ public class LocationController {
         return ResponseEntity.ok(locationService.search(query.trim()));
     }
 
-    @GetMapping("/findbyid")
+    @GetMapping("/findById")
     public ResponseEntity<LocationFullDTO> search(@RequestParam Long id) {
-        log.info("GET /findbyid={} location wurde aufgerufen", id);
+        log.info("GET /findById={} location wurde aufgerufen", id);
         return locationService.getLocationById(id)
                               .map(ResponseEntity::ok)           // 200 + Body
                               .orElse(ResponseEntity.notFound()
