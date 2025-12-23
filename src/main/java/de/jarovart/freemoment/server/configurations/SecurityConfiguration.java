@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -44,7 +45,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
         JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, userService);
 
-        return http.csrf(AbstractHttpConfigurer::disable)
+        return http.cors(Customizer.withDefaults())
+                   .csrf(AbstractHttpConfigurer::disable)
                    .sessionManagement(session ->
                                               session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                    .authorizeHttpRequests(auth -> auth
@@ -57,7 +59,8 @@ public class SecurityConfiguration {
                                             "/api/locations/withinWithTime**",
                                             "/h2-console/**")
                            .permitAll()
-                           .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation")
+                           .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation",
+                                            "/api/auth/**")
                            .permitAll() // wichtig für React / CORS
                            .anyRequest()
                            .authenticated())
@@ -70,13 +73,14 @@ public class SecurityConfiguration {
     // 🔧 CORS-Setup für React
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React URL
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

@@ -12,6 +12,7 @@ import de.jarovart.freemoment.server.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -25,11 +26,13 @@ public class DbSeeding {
 
     @Bean
     public CommandLineRunner init(LocationRepository locationRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  PasswordEncoder passwordEncoder) {
         return args -> {
             AppUser user = new AppUser();
             user.setUsername("jarovart");
             user.setEmail("info@jarovart.de");
+            user.setPassword(passwordEncoder.encode("test"));
             user.setRoles(Set.of(UserRole.ROLE_USER));
             userRepository.save(user);
             locationRepository.save(
@@ -83,7 +86,9 @@ public class DbSeeding {
                                                  LocalDateTime.now().plusMinutes(1),
                                                  53.23274086211193, 8.784696922468369,
                                                  "thumbnailUrl10", "imageUrl10", user));
-            locationRepository.save(new Location("Lukasz", "bude", LocalDateTime.now(),
+            locationRepository.save(new Location("Lukasz",
+                                                 "budeunendlichlangedescriptionweilisssoundmussoextralangebeschraibungreichtfüerstesten",
+                                                 LocalDateTime.now(),
                                                  LocalDateTime.now().minusYears(1),
                                                  LocalDateTime.now().plusYears(5).plusHours(1),
                                                  53.21983113606297, 8.789933424275779,

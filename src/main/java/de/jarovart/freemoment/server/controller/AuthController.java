@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*") // wichtig für Flutter
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -61,22 +61,31 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String username = body.get("username");
-        String password = body.get("password");
-        Optional<AppUser> o = userRepository.findByUsername(username);
-        if (o.isEmpty()) {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
-        AppUser u = o.get();
-        if (!passwordEncoder.matches(password, u.getPassword())) {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
+        try {
+            String username = body.get("username");
+            String password = body.get("password");
+            Optional<AppUser> o = userRepository.findByUsername(username);
+            if (o.isEmpty()) {
+                return ResponseEntity.status(401).body("Invalid credentials");
+            }
+            AppUser u = o.get();
+            if (!passwordEncoder.matches(password, u.getPassword())) {
+                return ResponseEntity.status(401).body("Invalid credentials");
+            }
 
-        String token = jwtService.generateToken(u.getUsername(), Map.of("roles",
-                                                                        u.getRoles().stream().map(UserRole::getRoleName)
-                                                                         .collect(
-                                                                                 Collectors.joining(","))));
-        return ResponseEntity.ok(Map.of("token", token, "username", u.getUsername()));
+            String token = jwtService.generateToken(u.getUsername(), Map.of("roles",
+                                                                            u.getRoles().stream()
+                                                                             .map(UserRole::getRoleName)
+                                                                             .collect(
+                                                                                     Collectors.joining(","))));
+
+            return ResponseEntity.ok(Map.of("token", token, "username", u.getUsername()));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(500).body("Login error");
+        } finally {
+            System.out.println("test");
+        }
     }
 
     @PostMapping("/forgot-password")
