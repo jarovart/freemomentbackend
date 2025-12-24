@@ -48,12 +48,23 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
+        String email = body.get("email");
         if (userRepository.existsByUsername(username)) {
             return ResponseEntity.badRequest().body("Username exists");
+        }
+        if (password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body("Password is required");
+        }
+        if (email == null || email.isBlank() || !email.contains("@") || !email.contains(".") || email.contains(" ")) {
+            return ResponseEntity.badRequest().body("Invalid email");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity.badRequest().body("Email exists");
         }
         AppUser user = new AppUser();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
         user.setRoles(Set.of(UserRole.ROLE_USER));
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("username", user.getUsername()));
