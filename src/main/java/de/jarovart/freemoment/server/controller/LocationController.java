@@ -4,9 +4,9 @@
  */
 package de.jarovart.freemoment.server.controller;
 
-import de.jarovart.freemoment.server.data.dtos.LocationBaseDTO;
-import de.jarovart.freemoment.server.data.dtos.LocationCreateDTO;
-import de.jarovart.freemoment.server.data.dtos.LocationFullDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationBaseDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationCreateDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationFullDTO;
 import de.jarovart.freemoment.server.services.LocationLikerService;
 import de.jarovart.freemoment.server.services.LocationService;
 import jakarta.validation.Valid;

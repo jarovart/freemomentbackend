@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package de.jarovart.freemoment.server.auth;
+package de.jarovart.freemoment.server.util;
 
 import de.jarovart.freemoment.server.services.JwtService;
-import de.jarovart.freemoment.server.services.UserService;
+import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,11 +24,11 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
 
-    public JwtAuthFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthFilter(JwtService jwtService, AuthenticationService authenticationService) {
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.authenticationService = authenticationService;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 String username = jwtService.parseToken(token).getBody().getSubject();
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userService.loadUserByUsername(username);
+                    UserDetails userDetails = authenticationService.loadUserByUsername(username);
                     if (jwtService.isTokenValid(token, userDetails.getUsername())) {
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(userDetails, null,

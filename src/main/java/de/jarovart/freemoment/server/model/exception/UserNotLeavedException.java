@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.data.exception;
+package de.jarovart.freemoment.server.model.exception;
 
 public class UserNotLeavedException extends RuntimeException {
 

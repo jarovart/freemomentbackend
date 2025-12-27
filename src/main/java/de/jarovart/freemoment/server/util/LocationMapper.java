@@ -1,11 +1,11 @@
 package de.jarovart.freemoment.server.util;
 
-import de.jarovart.freemoment.server.data.dtos.AppUserBaseDTO;
-import de.jarovart.freemoment.server.data.dtos.LocationBaseDTO;
-import de.jarovart.freemoment.server.data.dtos.LocationCreateDTO;
-import de.jarovart.freemoment.server.data.dtos.LocationFullDTO;
-import de.jarovart.freemoment.server.data.entities.AppUser;
-import de.jarovart.freemoment.server.data.entities.Location;
+import de.jarovart.freemoment.server.model.dtos.AppUserBaseDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationBaseDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationCreateDTO;
+import de.jarovart.freemoment.server.model.dtos.LocationFullDTO;
+import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.entities.Location;
 
 import java.util.List;
 

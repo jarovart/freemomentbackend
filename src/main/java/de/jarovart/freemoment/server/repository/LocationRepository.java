@@ -4,7 +4,7 @@
  */
 package de.jarovart.freemoment.server.repository;
 
-import de.jarovart.freemoment.server.data.entities.Location;
+import de.jarovart.freemoment.server.model.entities.Location;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

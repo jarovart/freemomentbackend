@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.data.dtos;
+package de.jarovart.freemoment.server.model.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

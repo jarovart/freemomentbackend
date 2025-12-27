@@ -4,7 +4,7 @@
  */
 package de.jarovart.freemoment.server.repository;
 
-import de.jarovart.freemoment.server.data.entities.AppUser;
+import de.jarovart.freemoment.server.model.entities.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -17,9 +17,5 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
 
     public Optional<AppUser> findByUsername(String username);
 
-    public boolean existsByUsername(String username);
-
     public Optional<AppUser> findByEmail(String email);
-
-    public Optional<AppUser> findByResetToken(String resetToken);
 }

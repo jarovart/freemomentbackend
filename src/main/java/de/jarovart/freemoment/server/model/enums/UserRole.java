@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.data.enums;
+package de.jarovart.freemoment.server.model.enums;
 
 import lombok.Getter;
 

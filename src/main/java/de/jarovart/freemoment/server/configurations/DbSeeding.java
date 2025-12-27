@@ -4,9 +4,9 @@
  */
 package de.jarovart.freemoment.server.configurations;
 
-import de.jarovart.freemoment.server.data.entities.AppUser;
-import de.jarovart.freemoment.server.data.entities.Location;
-import de.jarovart.freemoment.server.data.enums.UserRole;
+import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.entities.Location;
+import de.jarovart.freemoment.server.model.enums.UserRole;
 import de.jarovart.freemoment.server.repository.LocationRepository;
 import de.jarovart.freemoment.server.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;

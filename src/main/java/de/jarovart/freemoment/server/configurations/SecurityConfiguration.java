@@ -4,9 +4,9 @@
  */
 package de.jarovart.freemoment.server.configurations;
 
-import de.jarovart.freemoment.server.auth.JwtAuthFilter;
 import de.jarovart.freemoment.server.services.JwtService;
-import de.jarovart.freemoment.server.services.UserService;
+import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
+import de.jarovart.freemoment.server.util.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,16 +34,16 @@ import java.util.List;
 public class SecurityConfiguration {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
 
-    public SecurityConfiguration(JwtService jwtService, UserService userService) {
+    public SecurityConfiguration(JwtService jwtService, AuthenticationService authenticationService) {
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.authenticationService = authenticationService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
-        JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, userService);
+        JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, authenticationService);
 
         return http.cors(Customizer.withDefaults())
                    .csrf(AbstractHttpConfigurer::disable)

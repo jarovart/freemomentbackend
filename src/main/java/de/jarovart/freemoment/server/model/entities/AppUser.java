@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package de.jarovart.freemoment.server.data.entities;
+package de.jarovart.freemoment.server.model.entities;
 
-import de.jarovart.freemoment.server.data.enums.UserRole;
+import de.jarovart.freemoment.server.model.enums.UserRole;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -37,7 +37,6 @@ import java.util.Set;
 @Setter
 @ToString(exclude = {
         "password",
-        "resetToken",
         "createdLocations",
         "likedLocations",
         "joinedLocations"
@@ -49,6 +48,8 @@ public class AppUser {
     private Long id;
 
     private String username;
+    private String firstName;
+    private String lastName;
     private String password; // BCrypt-hash
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -59,9 +60,12 @@ public class AppUser {
     @Column(name = "role")
     private Set<UserRole> roles;
     private String email;
-    private Boolean isActive;
-    private String resetToken;
-    private LocalDateTime resetTokenExpiry;
+    private LocalDateTime createdAt;
+
+    // Banning fields
+    private Boolean isBanned;
+    private LocalDateTime bannedUntil;
+
     @OneToMany(mappedBy = "createdUser")
     private List<Location> createdLocations = new ArrayList<>();
     @ManyToMany(mappedBy = "likedByUsers")

@@ -1,8 +1,8 @@
-package de.jarovart.freemoment.server.controller;
+package de.jarovart.freemoment.server.controller.exceptionhandler;
 
-import de.jarovart.freemoment.server.data.dtos.ApiError;
-import de.jarovart.freemoment.server.data.exception.UserAlreadyJoinedException;
-import de.jarovart.freemoment.server.data.exception.UserNotLeavedException;
+import de.jarovart.freemoment.server.model.dtos.ApiError;
+import de.jarovart.freemoment.server.model.exception.UserAlreadyJoinedException;
+import de.jarovart.freemoment.server.model.exception.UserNotLeavedException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

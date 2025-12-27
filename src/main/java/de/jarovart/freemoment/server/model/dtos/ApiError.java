@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.data.dtos;
+package de.jarovart.freemoment.server.model.dtos;
 
 public class ApiError {
     private final int status;
