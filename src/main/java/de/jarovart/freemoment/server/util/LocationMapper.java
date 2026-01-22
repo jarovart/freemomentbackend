@@ -52,14 +52,14 @@ public class LocationMapper {
                 .toList();
         return new LocationFullDTO(location.getId(),
                                    location.getTitle(),
+                                   location.getAddress(),
                                    location.getDescription(),
                                    location.getCreationDateTime(),
                                    location.getStartDateTime(),
                                    location.getEndDateTime(),
                                    location.getLatitude(),
                                    location.getLongitude(),
-                                   location.getThumbnailUrl(),
-                                   location.getImageUrl(),
+                                   location.getImageUrls(),
                                    location.getCreatedUser().getId(),
                                    location.getCreatedUser().getUsername(),
                                    joinedUsers,
@@ -70,13 +70,13 @@ public class LocationMapper {
         return new Location(
                 locationCreateDTO.getTitle(),
                 locationCreateDTO.getDescription(),
+                locationCreateDTO.getAddress(),
                 locationCreateDTO.getCreationDateTime(),
                 locationCreateDTO.getStartDateTime(),
                 locationCreateDTO.getEndDateTime(),
                 locationCreateDTO.getLatitude(),
                 locationCreateDTO.getLongitude(),
-                locationCreateDTO.getThumbnailUrl(),
-                "",
+                locationCreateDTO.getImageUrls(),
                 user
         );
     }

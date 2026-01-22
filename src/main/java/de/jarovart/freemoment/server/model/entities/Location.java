@@ -20,6 +20,7 @@ import net.datafaker.Faker;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,6 +40,7 @@ public class Location {
 
     private String title;
     private String description;
+    private String address;
     @Column(nullable = false)
     private LocalDateTime creationDateTime;
     @Column(nullable = false)
@@ -50,7 +52,7 @@ public class Location {
     @Column(nullable = false)
     private Double longitude;
     private String thumbnailUrl;
-    private String imageUrl;
+    private List<String> imageUrls;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_user_id")
     private AppUser createdUser;
@@ -69,18 +71,19 @@ public class Location {
     public Location() {
     }
 
-    public Location(String title, String description, LocalDateTime creationDateTime, LocalDateTime startDateTime,
-                    LocalDateTime endDateTime, Double latitude, Double longitude, String thumbnailUrl, String imageUrl,
-                    AppUser createdUser) {
+    public Location(String title, String description, String address, LocalDateTime creationDateTime,
+                    LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
+                    List<String> imageUrls, AppUser createdUser) {
         this.title = title;
         this.description = description;
+        this.address = address;
         this.creationDateTime = creationDateTime;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.thumbnailUrl = thumbnailUrl;
-        this.imageUrl = imageUrl;
+        //this.thumbnailUrl = thumbnailUrl;
+        this.imageUrls = imageUrls;
         this.createdUser = createdUser;
         this.likedByUsers = new HashSet<>();
         this.joinedUsers = new HashSet<>();

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class LocationCreateDTO {
@@ -13,6 +14,8 @@ public class LocationCreateDTO {
     private String title;
 
     private String description;
+
+    private String address;
 
     @NotNull
     private LocalDateTime creationDateTime;
@@ -27,10 +30,7 @@ public class LocationCreateDTO {
     @NotNull
     private Double longitude;
 
-    private String thumbnailUrl;
-    private String imageUrl;
-    @NotNull
-    private Long createdUserId;
+    private List<String> imageUrls;
     @NotNull
     private String createdUsername;
 }
