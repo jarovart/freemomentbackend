@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.model.dtos;
+package de.jarovart.freemoment.server.model.dtos.response;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class LocationBaseDTO {
+public class LocationResponse {
 
     private static int likedTest = 0;
     @NotNull
@@ -29,10 +29,10 @@ public class LocationBaseDTO {
     private int joinedUserCount;
     private int likedUserCount;
 
-    public LocationBaseDTO(Long id, String title, String description, LocalDateTime creationDateTime,
-                           LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
-                           String thumbnailUrl, Long createdUserId, String createdUsername, int joinedUserCount,
-                           int likedUserCount) {
+    public LocationResponse(Long id, String title, String description, LocalDateTime creationDateTime,
+                            LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
+                            String thumbnailUrl, Long createdUserId, String createdUsername, int joinedUserCount,
+                            int likedUserCount) {
         this.id = id;
         this.title = title;
         this.description = description;

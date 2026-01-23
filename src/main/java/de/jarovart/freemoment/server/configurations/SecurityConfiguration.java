@@ -51,7 +51,6 @@ public class SecurityConfiguration {
                                               session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                    .authorizeHttpRequests(auth -> auth
                            .requestMatchers("/api/auth/**",
-                                            "/api/images/**",
                                             "/api/locations",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
@@ -59,11 +58,11 @@ public class SecurityConfiguration {
                                             "/api/locations/withinWithTime**",
                                             "/h2-console/**")
                            .permitAll()
-                           .requestMatchers(HttpMethod.OPTIONS, "/api/locations/createasaLocation",
-                                            "/api/auth/**")
+                           .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll() // Bilder ansehen
+                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**")
                            .permitAll() // wichtig für React / CORS
-                           .requestMatchers("/api/images/upload",
-                                            "/api/locations/createLocation").authenticated()
+                           .requestMatchers(HttpMethod.POST, "/api/images/upload",
+                                            "/api/locations/createLocation").authenticated() // Upload
                            .anyRequest()
                            .authenticated())
                    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

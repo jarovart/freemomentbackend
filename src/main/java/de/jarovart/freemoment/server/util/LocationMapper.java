@@ -1,9 +1,9 @@
 package de.jarovart.freemoment.server.util;
 
-import de.jarovart.freemoment.server.model.dtos.AppUserBaseDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationBaseDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationCreateDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationFullDTO;
+import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.response.AppUserResponse;
+import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
+import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Location;
 
@@ -13,12 +13,12 @@ import java.util.List;
  * Überlege auf MapStruct zu wechseln. Ab +10 DTOs.
  */
 public class LocationMapper {
-    public static List<LocationBaseDTO> toBaseDTOs(List<Location> locations) {
-        return locations.stream().map(LocationMapper::toBaseDTO).toList();
+    public static List<LocationResponse> toLocationResponse(List<Location> locations) {
+        return locations.stream().map(LocationMapper::toLocationResponse).toList();
     }
 
-    public static LocationBaseDTO toBaseDTO(Location location) {
-        return new LocationBaseDTO(
+    public static LocationResponse toLocationResponse(Location location) {
+        return new LocationResponse(
                 location.getId(),
                 location.getTitle(),
                 location.getDescription(),
@@ -38,45 +38,47 @@ public class LocationMapper {
      * Careful: Lazy loading exist (likedByUsers, joinedUsers) - transacational read only is needed
      *
      * @param location entity to parse into full dto.
-     * @return @{@link LocationFullDTO} ready for sending.
+     * @return @{@link LocationFullResponse} ready for sending.
      */
-    public static LocationFullDTO toFullDTO(Location location) {
-        List<AppUserBaseDTO> likedByUsers = location
+    public static LocationFullResponse toFullResponse(Location location) {
+        List<AppUserResponse> likedByUsers = location
                 .getLikedByUsers()
                 .stream()
-                .map(user -> new AppUserBaseDTO(user.getId(), user.getUsername()))
+                .map(user -> new AppUserResponse(user.getId(), user.getUsername()))
                 .toList();
-        List<AppUserBaseDTO> joinedUsers = location
+        List<AppUserResponse> joinedUsers = location
                 .getJoinedUsers().stream()
-                .map(user -> new AppUserBaseDTO(user.getId(), user.getUsername()))
+                .map(user -> new AppUserResponse(user.getId(), user.getUsername()))
                 .toList();
-        return new LocationFullDTO(location.getId(),
-                                   location.getTitle(),
-                                   location.getAddress(),
-                                   location.getDescription(),
-                                   location.getCreationDateTime(),
-                                   location.getStartDateTime(),
-                                   location.getEndDateTime(),
-                                   location.getLatitude(),
-                                   location.getLongitude(),
-                                   location.getImageUrls(),
-                                   location.getCreatedUser().getId(),
-                                   location.getCreatedUser().getUsername(),
-                                   joinedUsers,
-                                   likedByUsers);
+        return new LocationFullResponse(location.getId(),
+                                        location.getTitle(),
+                                        location.getAddress(),
+                                        location.getDescription(),
+                                        location.getCreationDateTime(),
+                                        location.getStartDateTime(),
+                                        location.getEndDateTime(),
+                                        location.getLatitude(),
+                                        location.getLongitude(),
+                                        location.getThumbnailUrl(),
+                                        location.getImageUrls(),
+                                        location.getCreatedUser().getId(),
+                                        location.getCreatedUser().getUsername(),
+                                        joinedUsers,
+                                        likedByUsers);
     }
 
-    public static Location fromCreateDTO(LocationCreateDTO locationCreateDTO, AppUser user) {
+    public static Location fromCreateRequest(LocationCreateRequest locationCreateRequest, AppUser user) {
         return new Location(
-                locationCreateDTO.getTitle(),
-                locationCreateDTO.getDescription(),
-                locationCreateDTO.getAddress(),
-                locationCreateDTO.getCreationDateTime(),
-                locationCreateDTO.getStartDateTime(),
-                locationCreateDTO.getEndDateTime(),
-                locationCreateDTO.getLatitude(),
-                locationCreateDTO.getLongitude(),
-                locationCreateDTO.getImageUrls(),
+                locationCreateRequest.getTitle(),
+                locationCreateRequest.getDescription(),
+                locationCreateRequest.getAddress(),
+                locationCreateRequest.getCreationDateTime(),
+                locationCreateRequest.getStartDateTime(),
+                locationCreateRequest.getEndDateTime(),
+                locationCreateRequest.getLatitude(),
+                locationCreateRequest.getLongitude(),
+                locationCreateRequest.getThumbnailUrl(),
+                locationCreateRequest.getImageUrls(),
                 user
         );
     }

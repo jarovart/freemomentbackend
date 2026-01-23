@@ -73,7 +73,7 @@ public class Location {
 
     public Location(String title, String description, String address, LocalDateTime creationDateTime,
                     LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
-                    List<String> imageUrls, AppUser createdUser) {
+                    String thumbnailUrl, List<String> imageUrls, AppUser createdUser) {
         this.title = title;
         this.description = description;
         this.address = address;
@@ -82,7 +82,7 @@ public class Location {
         this.endDateTime = endDateTime;
         this.latitude = latitude;
         this.longitude = longitude;
-        //this.thumbnailUrl = thumbnailUrl;
+        this.thumbnailUrl = thumbnailUrl;
         this.imageUrls = imageUrls;
         this.createdUser = createdUser;
         this.likedByUsers = new HashSet<>();

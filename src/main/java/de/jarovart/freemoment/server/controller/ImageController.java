@@ -51,14 +51,15 @@ public class ImageController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<ImageResponse>> upload(
             @RequestParam("files") List<MultipartFile> files, @AuthenticationPrincipal UserDetails principal) {
-        log.info("POST /upload request: {} from {}",
+        log.info("POST /upload files request: {} from {}",
                  files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")), principal.getUsername());
-        
+
         List<ImageResponse> imageResponses = imageService.store(files, principal.getUsername());
         return ResponseEntity.ok(imageResponses);
     }
 
-    @DeleteMapping("/images/{imageId}")
+    @DeleteMapping("/{imageId}")
+    @PreAuthorize("hasRole('USER')")
     public void deleteImage(@PathVariable Long imageId) {
         imageService.delete(imageId);
     }

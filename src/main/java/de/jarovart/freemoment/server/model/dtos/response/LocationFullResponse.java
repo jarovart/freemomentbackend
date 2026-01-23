@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.model.dtos;
+package de.jarovart.freemoment.server.model.dtos.response;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class LocationFullDTO {
+public class LocationFullResponse {
     @NotNull
     private Long id;
     private String title;
@@ -27,13 +27,15 @@ public class LocationFullDTO {
     private List<String> imageUrls;
     private Long createdUserId;
     private String createdUsername;
-    private List<AppUserBaseDTO> joinedUsers;
-    private List<AppUserBaseDTO> likedUsers;
+    private List<AppUserResponse> joinedUsers;
+    private List<AppUserResponse> likedUsers;
 
-    public LocationFullDTO(Long id, String title, String description, String address, LocalDateTime creationDateTime,
-                           LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude,
-                           Double longitude, List<String> imageUrls, Long createdUserId, String createdUsername,
-                           List<AppUserBaseDTO> joinedUsers, List<AppUserBaseDTO> likedUsers) {
+    public LocationFullResponse(Long id, String title, String description, String address,
+                                LocalDateTime creationDateTime,
+                                LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude,
+                                Double longitude, String thumbnailUrl, List<String> imageUrls, Long createdUserId,
+                                String createdUsername,
+                                List<AppUserResponse> joinedUsers, List<AppUserResponse> likedUsers) {
         this.id = id;
         this.title = title;
         this.description = description;

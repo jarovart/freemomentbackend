@@ -4,9 +4,9 @@
  */
 package de.jarovart.freemoment.server.controller;
 
-import de.jarovart.freemoment.server.model.dtos.LocationBaseDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationCreateDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationFullDTO;
+import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
+import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.services.LocationLikerService;
 import de.jarovart.freemoment.server.services.LocationService;
 import jakarta.validation.Valid;
@@ -50,7 +50,7 @@ public class LocationController {
     private LocationService locationService;
 
     @GetMapping
-    public ResponseEntity<List<LocationBaseDTO>> getAllLocations(@RequestParam(defaultValue = "100") int limit) {
+    public ResponseEntity<List<LocationResponse>> getAllLocations(@RequestParam(defaultValue = "100") int limit) {
         log.info("GET /api/locations");
         return ResponseEntity.ok(locationService.getAllLocations(limit)
                                                 .stream()
@@ -58,7 +58,7 @@ public class LocationController {
     }
 
     @GetMapping("/within")
-    public ResponseEntity<List<LocationBaseDTO>> getLocationsWithinBounds(
+    public ResponseEntity<List<LocationResponse>> getLocationsWithinBounds(
             @RequestParam double minLat, @RequestParam double maxLat, @RequestParam double minLng,
             @RequestParam double maxLng) {
         log.info("GET /within bounds lat=[{},{}] lng=[{},{}]", minLat, maxLat, minLng, maxLng);
@@ -69,7 +69,7 @@ public class LocationController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<LocationBaseDTO>> search(@RequestParam String query) {
+    public ResponseEntity<List<LocationResponse>> search(@RequestParam String query) {
         log.info("GET /search query={}", query);
         if (query == null || query.trim()
                                   .length() < 3) {
@@ -80,7 +80,7 @@ public class LocationController {
     }
 
     @GetMapping("/findById")
-    public ResponseEntity<LocationFullDTO> search(@RequestParam Long id) {
+    public ResponseEntity<LocationFullResponse> search(@RequestParam Long id) {
         log.info("GET /findById={} location wurde aufgerufen", id);
         return locationService.getLocationById(id)
                               .map(ResponseEntity::ok)           // 200 + Body
@@ -89,7 +89,7 @@ public class LocationController {
     }
 
     @GetMapping("/withinWithTime")
-    public ResponseEntity<List<LocationBaseDTO>> getLocationsWithinBoundsWithTime(
+    public ResponseEntity<List<LocationResponse>> getLocationsWithinBoundsWithTime(
             @RequestParam double minLat, @RequestParam double maxLat,
             @RequestParam double minLng, @RequestParam double maxLng,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
@@ -105,10 +105,12 @@ public class LocationController {
 
     @PostMapping("/createLocation")
     @PreAuthorize("hasRole('USE_ROLE')")
-    public ResponseEntity<LocationBaseDTO> createLocation(@Valid @RequestBody LocationCreateDTO locationCreateDTO
+    public ResponseEntity<LocationResponse> createLocation(
+            @Valid @RequestBody LocationCreateRequest locationCreateRequest
             , @AuthenticationPrincipal UserDetails principal) {
-        log.info("POST /createLocation request: {} from {}", locationCreateDTO.getTitle(), principal.getUsername());
-        LocationBaseDTO createdLocation = locationService.createLocation(locationCreateDTO, principal.getUsername());
+        log.info("POST /createLocation request: {} from {}", locationCreateRequest.getTitle(), principal.getUsername());
+        LocationResponse createdLocation = locationService.createLocation(locationCreateRequest,
+                                                                          principal.getUsername());
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 🔥 201
                 .body(createdLocation);

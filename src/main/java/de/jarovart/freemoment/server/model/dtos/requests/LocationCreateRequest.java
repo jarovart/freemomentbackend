@@ -1,4 +1,4 @@
-package de.jarovart.freemoment.server.model.dtos;
+package de.jarovart.freemoment.server.model.dtos.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class LocationCreateDTO {
+public class LocationCreateRequest {
 
     @NotBlank
     private String title;
@@ -30,6 +30,7 @@ public class LocationCreateDTO {
     @NotNull
     private Double longitude;
 
+    private String thumbnailUrl;
     private List<String> imageUrls;
     @NotNull
     private String createdUsername;

@@ -1,8 +1,8 @@
 package de.jarovart.freemoment.server.services;
 
-import de.jarovart.freemoment.server.model.dtos.LocationBaseDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationCreateDTO;
-import de.jarovart.freemoment.server.model.dtos.LocationFullDTO;
+import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
+import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Location;
 import de.jarovart.freemoment.server.model.exception.UserAlreadyJoinedException;
@@ -30,44 +30,44 @@ public class LocationService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<LocationBaseDTO> getAllLocations(int limit) {
+    public List<LocationResponse> getAllLocations(int limit) {
         Pageable pageable = PageRequest.of(0, Math.min(limit, 500));
-        return LocationMapper.toBaseDTOs(locationRepository.findAll(pageable).getContent());
+        return LocationMapper.toLocationResponse(locationRepository.findAll(pageable).getContent());
     }
 
-    public List<LocationBaseDTO> getLocationsWithinBounds(double minLat, double maxLat, double minLng, double maxLng) {
+    public List<LocationResponse> getLocationsWithinBounds(double minLat, double maxLat, double minLng, double maxLng) {
         if (isInvalidBounds(minLat, maxLat, minLng, maxLng)) {
             return List.of();
         }
         Pageable limit = PageRequest.of(0, 200); // 🔥 Max Marker
-        return LocationMapper.toBaseDTOs(
+        return LocationMapper.toLocationResponse(
                 locationRepository.findByLatitudeBetweenAndLongitudeBetween(minLat, maxLat, minLng, maxLng, limit));
     }
 
-    public List<LocationBaseDTO> search(String query) {
+    public List<LocationResponse> search(String query) {
         if (query == null || query.isBlank() || query.length() < 3) {
             return List.of();
         }
         Pageable limit = PageRequest.of(0, 10);
-        return LocationMapper.toBaseDTOs(
+        return LocationMapper.toLocationResponse(
                 locationRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query, limit)
                                   .getContent());
     }
 
-    public Optional<LocationFullDTO> getLocationById(Long id) {
+    public Optional<LocationFullResponse> getLocationById(Long id) {
         Optional<Location> location = locationRepository.findByIdWithUsers(id);
-        return location.map(LocationMapper::toFullDTO);
+        return location.map(LocationMapper::toFullResponse);
     }
 
     @Transactional
-    public LocationBaseDTO createLocation(LocationCreateDTO locationCreateDTO, String username) {
+    public LocationResponse createLocation(LocationCreateRequest locationCreateRequest, String username) {
         AppUser user = userRepository.findByUsername(username)
                                      .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        Location location = LocationMapper.fromCreateDTO(locationCreateDTO, user);
-        return LocationMapper.toBaseDTO(locationRepository.save(location));
+        Location location = LocationMapper.fromCreateRequest(locationCreateRequest, user);
+        return LocationMapper.toLocationResponse(locationRepository.save(location));
     }
 
-    public List<LocationBaseDTO> getLocationsWithinBoundsAndRange(
+    public List<LocationResponse> getLocationsWithinBoundsAndRange(
             double minLat, double maxLat, double minLng, double maxLng, LocalDateTime rangeStart,
             LocalDateTime rangeEnd) {
         if (rangeStart == null || rangeEnd == null || !(rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd))
@@ -75,7 +75,7 @@ public class LocationService {
             return List.of();
         }
         Pageable limit = PageRequest.of(0, 200); // z.B. max Marker
-        return LocationMapper.toBaseDTOs(
+        return LocationMapper.toLocationResponse(
                 locationRepository.findWithinBoundsAndOverlappingRange(minLat, maxLat, minLng, maxLng, rangeStart,
                                                                        rangeEnd, limit));
     }

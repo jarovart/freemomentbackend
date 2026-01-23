@@ -1,11 +1,11 @@
 package de.jarovart.freemoment.server.services.controllerservices;
 
-import de.jarovart.freemoment.server.model.dtos.LoginDTO;
 import de.jarovart.freemoment.server.model.dtos.requests.LoginRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.RegisterRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.ResetPasswordRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.SendEmailRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.VerifyTokenRequest;
+import de.jarovart.freemoment.server.model.dtos.response.LoginResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.PasswordResetToken;
 import de.jarovart.freemoment.server.model.entities.PendingUser;
@@ -52,7 +52,7 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
-    public LoginDTO getLoginToken(LoginRequest loginRequest) {
+    public LoginResponse getLoginToken(LoginRequest loginRequest) {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(loginRequest.username());
         if (optionalAppUser.isEmpty() || !passwordEncoder.matches(loginRequest.password(),
                                                                   optionalAppUser.get().getPassword())) {
@@ -64,7 +64,7 @@ public class AuthenticationService implements UserDetailsService {
                                                                        .stream()
                                                                        .map(UserRole::getRoleName)
                                                                        .collect(Collectors.joining(","))));
-        return new LoginDTO(token, appUser.getUsername());
+        return new LoginResponse(token, appUser.getUsername());
     }
 
     @Transactional

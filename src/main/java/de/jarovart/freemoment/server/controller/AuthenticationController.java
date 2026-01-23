@@ -4,12 +4,12 @@
  */
 package de.jarovart.freemoment.server.controller;
 
-import de.jarovart.freemoment.server.model.dtos.LoginDTO;
 import de.jarovart.freemoment.server.model.dtos.requests.LoginRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.RegisterRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.ResetPasswordRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.SendEmailRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.VerifyTokenRequest;
+import de.jarovart.freemoment.server.model.dtos.response.LoginResponse;
 import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +37,9 @@ public class AuthenticationController {
     private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginDTO> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         log.info("POST /api/auth/login: for {}", loginRequest.username());
-        LoginDTO loginDTO = authenticationService.getLoginToken(loginRequest);
+        LoginResponse loginDTO = authenticationService.getLoginToken(loginRequest);
         return ResponseEntity.ok().body(loginDTO);
     }
 
