@@ -52,8 +52,8 @@ public class LocationMapper {
                 .toList();
         return new LocationFullResponse(location.getId(),
                                         location.getTitle(),
-                                        location.getAddress(),
                                         location.getDescription(),
+                                        location.getAddress(),
                                         location.getCreationDateTime(),
                                         location.getStartDateTime(),
                                         location.getEndDateTime(),
