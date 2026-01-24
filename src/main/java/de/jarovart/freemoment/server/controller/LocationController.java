@@ -104,10 +104,11 @@ public class LocationController {
 
 
     @PostMapping("/createLocation")
-    @PreAuthorize("hasRole('USE_ROLE')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<LocationResponse> createLocation(
             @Valid @RequestBody LocationCreateRequest locationCreateRequest
             , @AuthenticationPrincipal UserDetails principal) {
+        log.info("Authorities: {}", principal.getAuthorities());
         log.info("POST /createLocation request: {} from {}", locationCreateRequest.getTitle(), principal.getUsername());
         LocationResponse createdLocation = locationService.createLocation(locationCreateRequest,
                                                                           principal.getUsername());

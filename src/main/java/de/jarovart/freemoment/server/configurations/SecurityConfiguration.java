@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -31,6 +32,7 @@ import java.util.List;
  * @author Artem
  */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     private final JwtService jwtService;
@@ -51,16 +53,15 @@ public class SecurityConfiguration {
                                               session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                    .authorizeHttpRequests(auth -> auth
                            .requestMatchers("/api/auth/**",
-                                            "/api/locations",
+                                            "/h2-console/**"
+                           )
+                           .permitAll()
+                           .requestMatchers(HttpMethod.GET, "/api/images/**",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
-                                            "/api/locations/withinWithTime**",
-                                            "/h2-console/**")
-                           .permitAll()
-                           .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll() // Bilder ansehen
-                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**")
-                           .permitAll() // wichtig für React / CORS
+                                            "/api/locations/withinWithTime**").permitAll()
+                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
                            .requestMatchers(HttpMethod.POST, "/api/images/upload",
                                             "/api/locations/createLocation").authenticated() // Upload
                            .anyRequest()
