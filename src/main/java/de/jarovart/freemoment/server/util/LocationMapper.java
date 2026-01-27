@@ -22,6 +22,7 @@ public class LocationMapper {
                 location.getId(),
                 location.getTitle(),
                 location.getDescription(),
+                location.getAddress(),
                 location.getCreationDateTime(),
                 location.getStartDateTime(),
                 location.getEndDateTime(),

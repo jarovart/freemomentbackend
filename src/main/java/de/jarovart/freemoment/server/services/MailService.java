@@ -19,7 +19,7 @@ public class MailService {
     private JavaMailSender mailSender;
 
     public void sendVerificationMail(String receiverEmail, String token) throws SendingEmailException {
-        String link = "https://meetmaap.app/verify?token=" + token;
+        String link = "https://meetmaap.app/verifyemail?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailUsername);

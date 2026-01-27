@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                            )
                            .permitAll()
                            .requestMatchers(HttpMethod.GET, "/api/images/**",
+                                            "/api/locations/**",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",

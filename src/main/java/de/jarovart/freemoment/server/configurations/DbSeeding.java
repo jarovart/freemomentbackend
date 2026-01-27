@@ -108,7 +108,8 @@ public class DbSeeding {
                                                  user));
             locationRepository.save(new Location("Lukasz",
                                                  "budeunendlichlangedescriptionweilisssoundmussoextralangebeschraibungreichtfüerstesten",
-                                                 "27711 Osterholz-Scharmbeck, Karlstraße 8", LocalDateTime.now(),
+                                                 "Deutschland, 27711 Osterholz-Scharmbeck, Karlstraße 8",
+                                                 LocalDateTime.now(),
                                                  LocalDateTime.now().minusYears(1),
                                                  LocalDateTime.now().plusYears(5).plusHours(1),
                                                  53.21983113606297, 8.789933424275779,

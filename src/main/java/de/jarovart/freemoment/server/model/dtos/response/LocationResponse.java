@@ -13,6 +13,7 @@ public class LocationResponse {
     private Long id;
     private String title;
     private String description;
+    private String address;
     @NotNull
     private LocalDateTime creationDateTime;
     @NotNull
@@ -29,13 +30,14 @@ public class LocationResponse {
     private int joinedUserCount;
     private int likedUserCount;
 
-    public LocationResponse(Long id, String title, String description, LocalDateTime creationDateTime,
+    public LocationResponse(Long id, String title, String description, String address, LocalDateTime creationDateTime,
                             LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
                             String thumbnailUrl, Long createdUserId, String createdUsername, int joinedUserCount,
                             int likedUserCount) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.address = address;
         this.creationDateTime = creationDateTime;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
@@ -45,6 +47,6 @@ public class LocationResponse {
         this.createdUserId = createdUserId;
         this.createdUsername = createdUsername;
         this.joinedUserCount = joinedUserCount;
-        this.likedUserCount = likedTest++;
+        this.likedUserCount = likedUserCount;
     }
 }
