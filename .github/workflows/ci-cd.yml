@@ -11,6 +11,8 @@ env:
   ECR_REPOSITORY: freemomentrepo    # Name deines ECR-Repos
   ECS_CLUSTER: freemomentCluster
   ECS_SERVICE: freemomentService
+  MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+  MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
 
 jobs:
   build-and-deploy:
