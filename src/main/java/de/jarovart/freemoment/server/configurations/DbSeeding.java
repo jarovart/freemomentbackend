@@ -69,7 +69,8 @@ public class DbSeeding {
                                                  LocalDateTime.now().plusWeeks(2).plusDays(2).plusHours(1),
                                                  53.195762929604136, 8.627364440380877,
                                                  "/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg",
-                                                 List.of("/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg"),
+                                                 List.of("/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg"
+                                                         , "/api/images/7a3a4873-b5ba-40b4-bccd-80c36fbd6b81.jpg"),
                                                  user));
             locationRepository.save(
                     new Location("schweinewede", "standbärchen", "schweinewedeadresse", LocalDateTime.now(),
@@ -77,7 +78,8 @@ public class DbSeeding {
                                  LocalDateTime.now().plusWeeks(3).plusHours(1),
                                  53.22393166002433, 8.598868651806658,
                                  "/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg",
-                                 List.of("/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg"), user));
+                                 List.of("/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg"
+                                         , "/api/images/74ae79bb-f1b0-4653-8df8-90cbd138b0cc.jpg"), user));
             locationRepository.save(
                     new Location("eastcoast", "berlinsaft", "berliner saftladenadresse", LocalDateTime.now(),
                                  LocalDateTime.now().plusMonths(2).plusHours(1),
@@ -114,14 +116,18 @@ public class DbSeeding {
                                                  LocalDateTime.now().plusYears(5).plusHours(1),
                                                  53.21983113606297, 8.789933424275779,
                                                  "/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg",
-                                                 List.of("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"),
+                                                 List.of("/api/images/7a3a4873-b5ba-40b4-bccd-80c36fbd6b81.jpg"
+                                                         , "/api/images/74ae79bb-f1b0-4653-8df8-90cbd138b0cc.jpg",
+                                                         "/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"),
                                                  user));
             locationRepository.save(new Location("Artems", "zelt", "27711 ohz schillingstraße 4", LocalDateTime.now(),
                                                  LocalDateTime.now().plusHours(1),
                                                  LocalDateTime.now().plusYears(20).minusHours(18),
                                                  53.219985308236474, 8.778990011495017,
                                                  "/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg",
-                                                 List.of("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"),
+                                                 List.of("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"
+                                                         , "/api/images/7a3a4873-b5ba-40b4-bccd-80c36fbd6b81.jpg"
+                                                         , "/api/images/74ae79bb-f1b0-4653-8df8-90cbd138b0cc.jpg"),
                                                  user));
             locationRepository.save(new Location("standalone", "descr", "standaloneadresse", LocalDateTime.now(),
                                                  LocalDateTime.now().plusYears(2).plusHours(1),
@@ -151,7 +157,8 @@ public class DbSeeding {
                                  LocalDateTime.now().plusHours(1),
                                  53.183081223241345, 8.688584010620108,
                                  "/api/images/e42aab1e-880c-427b-8fd9-ed9018533167.jpg",
-                                 List.of("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"), user));
+                                 List.of("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg"
+                                         , "/api/images/7a3a4873-b5ba-40b4-bccd-80c36fbd6b81.jpg"), user));
             locationRepository.save(
                     new Location("platjenwerbes2", "der boZz", "der bozz strasse 12", LocalDateTime.now(),
                                  LocalDateTime.now().minusDays(1),
