@@ -27,15 +27,15 @@ public class LocationFullResponse {
     private List<String> imageUrls;
     private Long createdUserId;
     private String createdUsername;
-    private List<AppUserResponse> joinedUsers;
-    private List<AppUserResponse> likedUsers;
+    private List<UserResponse> joinedUsers;
+    private List<UserResponse> likedUsers;
 
     public LocationFullResponse(Long id, String title, String description, String address,
                                 LocalDateTime creationDateTime,
                                 LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude,
                                 Double longitude, String thumbnailUrl, List<String> imageUrls, Long createdUserId,
                                 String createdUsername,
-                                List<AppUserResponse> joinedUsers, List<AppUserResponse> likedUsers) {
+                                List<UserResponse> joinedUsers, List<UserResponse> likedUsers) {
         this.id = id;
         this.title = title;
         this.description = description;

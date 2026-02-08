@@ -1,9 +1,9 @@
 package de.jarovart.freemoment.server.util;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
-import de.jarovart.freemoment.server.model.dtos.response.AppUserResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
+import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Location;
 
@@ -42,14 +42,16 @@ public class LocationMapper {
      * @return @{@link LocationFullResponse} ready for sending.
      */
     public static LocationFullResponse toFullResponse(Location location) {
-        List<AppUserResponse> likedByUsers = location
+        List<UserResponse> likedByUsers = location
                 .getLikedByUsers()
                 .stream()
-                .map(user -> new AppUserResponse(user.getId(), user.getUsername()))
+                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getFirstName(),
+                                              user.getLastName(), user.getProfileUrl()))
                 .toList();
-        List<AppUserResponse> joinedUsers = location
+        List<UserResponse> joinedUsers = location
                 .getJoinedUsers().stream()
-                .map(user -> new AppUserResponse(user.getId(), user.getUsername()))
+                .map(user -> new UserResponse(user.getId(), user.getUsername(), user.getFirstName(),
+                                              user.getLastName(), user.getProfileUrl()))
                 .toList();
         return new LocationFullResponse(location.getId(),
                                         location.getTitle(),

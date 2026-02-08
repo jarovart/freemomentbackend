@@ -50,6 +50,7 @@ public class AppUser {
     private String username;
     private String firstName;
     private String lastName;
+    private String profileUrl;
     private String password; // BCrypt-hash
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

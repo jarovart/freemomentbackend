@@ -14,6 +14,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,4 +109,41 @@ public class LocationService {
         return !(minLat >= -90) || !(maxLat <= 90) || !(minLng >= -180) || !(maxLng <= 180) || !(minLat < maxLat)
                 || !(minLng < maxLng);
     }
+
+    public Slice<LocationResponse> getSliceLocationsByFilterSettings(
+            int page, int paramSize, String query, double lat, double lng, double radiusKm, LocalDateTime startDateTime,
+            LocalDateTime endDateTime) {
+        int size = Math.min(paramSize, 50);
+        double latDelta = radiusKm / 111.0;
+        double lngDelta = radiusKm / (111.0 * Math.cos(Math.toRadians(lat)));
+        double minLat = lat - latDelta;
+        double maxLat = lat + latDelta;
+        double minLng = lng - lngDelta;
+        double maxLng = lng + lngDelta;
+
+        var pageable = PageRequest.of(page, size * 3,
+                                      Sort.by(Sort.Order.desc("creationDateTime"), Sort.Order.desc("id")));
+
+        var pageResult = locationRepository.searchH2(startDateTime, endDateTime, minLat, maxLat, minLng, maxLng, query,
+                                                     pageable);
+        var filtered = pageResult.getContent().stream()
+                                 .filter(l -> haversineKm(lat, lng, l.getLatitude(), l.getLongitude()) <= radiusKm)
+                                 .limit(size)
+                                 .map(LocationMapper::toLocationResponse)
+                                 .toList();
+
+        boolean hasNext = pageResult.hasNext() || pageResult.getNumberOfElements() > size;
+        return new SliceImpl<>(filtered, PageRequest.of(page, size), hasNext);
+    }
+
+    private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0088;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
 }

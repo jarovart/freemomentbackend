@@ -32,10 +32,24 @@ public class DbSeeding {
         return args -> {
             AppUser user = new AppUser();
             user.setUsername("jarovart");
+            user.setFirstName("Artem");
+            user.setLastName("Jarovoj");
             user.setEmail("info@jarovart.de");
             user.setPassword(passwordEncoder.encode("test"));
             user.setRoles(Set.of(UserRole.ROLE_USER));
             userRepository.save(user);
+
+
+            AppUser user1 = new AppUser();
+            user1.setUsername("petervart");
+            user1.setFirstName("Petertem");
+            user1.setLastName("blackjaroblack");
+            user1.setEmail("info@jarovart.de");
+            user1.setProfileUrl("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg");
+            user1.setPassword(passwordEncoder.encode("test123"));
+            user1.setRoles(Set.of(UserRole.ROLE_USER));
+            userRepository.save(user1);
+
             locationRepository.save(
                     new Location("NordMauer", "berlinmauer", "an der berliner mauer", LocalDateTime.now(),
                                  LocalDateTime.now().plusHours(1),

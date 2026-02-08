@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Slice;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,9 +53,7 @@ public class LocationController {
     @GetMapping
     public ResponseEntity<List<LocationResponse>> getAllLocations(@RequestParam(defaultValue = "100") int limit) {
         log.info("GET /api/locations");
-        return ResponseEntity.ok(locationService.getAllLocations(limit)
-                                                .stream()
-                                                .toList());
+        return ResponseEntity.ok(locationService.getAllLocations(limit));
     }
 
     @GetMapping("/within")
@@ -102,6 +101,23 @@ public class LocationController {
                                                 .toList());
     }
 
+    @GetMapping("/sliceFilterSettings")
+    public Slice<LocationResponse> getSliceLocationsByFilterSettings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam double radiusKm,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
+        log.info("GET /sliceFilterSettings bounds query={} with page=[{},{}] Position: [lat={} lng={} radius={}]"
+                         + " startTime: {}, endTime={}", query, page, size, lat, lng, radiusKm, startDateTime,
+                 endDateTime);
+        return locationService.getSliceLocationsByFilterSettings(page, size, query, lat, lng, radiusKm,
+                                                                 startDateTime, endDateTime);
+    }
+
 
     @PostMapping("/createLocation")
     @PreAuthorize("hasRole('USER')")
@@ -116,8 +132,6 @@ public class LocationController {
                 .status(HttpStatus.CREATED) // 🔥 201
                 .body(createdLocation);
     }
-
-    //
 
     /**
      * {@Code: Authentication authentication alternative mit mehr boilerplate}

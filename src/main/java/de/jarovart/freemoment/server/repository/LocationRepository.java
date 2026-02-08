@@ -52,4 +52,61 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
                 where l.id = :id
             """)
     Optional<Location> findByIdWithUsers(@Param("id") Long id);
+
+    @Query("""
+            select l from Location l
+            where l.startDateTime >= :start and l.endDateTime <= :end
+            and l.latitude between :minLat and :maxLat
+            and l.longitude between :minLng and :maxLng
+            and (:q is null or lower(l.title) like lower(concat('%', :q, '%'))
+                          or lower(l.description) like lower(concat('%', :q, '%')))
+            """)
+    Page<Location> searchH2(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            @Param("q") String q,
+            Pageable pageable
+    );
+
+    Page<Location> findByStartDateTimeGreaterThanEqualAndEndDateTimeLessThanEqualAndLatitudeBetweenAndLongitudeBetween(
+            LocalDateTime start, LocalDateTime end,
+            double minLat, double maxLat,
+            double minLng, double maxLng,
+            Pageable pageable
+    );
+
+    @Query(value = """
+            select * from locations l
+            where l.start_date_time >= :start and l.end_date_time <= :end
+            and (:q is null or l.title ilike concat('%', :q, '%') or l.description ilike concat('%', :q, '%'))
+            and ST_DWithin(
+              l.position::geography,
+              ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+              :radiusMeters
+            )
+            order by l.creation_date_time desc, l.id desc
+            """,
+            countQuery = """
+                    select count(*) from locations l
+                    where l.start_date_time >= :start and l.end_date_time <= :end
+                    and (:q is null or l.title ilike concat('%', :q, '%') or l.description ilike concat('%', :q, '%'))
+                    and ST_DWithin(
+                      l.position::geography,
+                      ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                      :radiusMeters
+                    )
+                    """, nativeQuery = true)
+    Page<Location> searchPostgis(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            @Param("q") String q, Pageable pageable);
+
 }
