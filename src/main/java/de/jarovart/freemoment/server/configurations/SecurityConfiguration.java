@@ -63,7 +63,8 @@ public class SecurityConfiguration {
                                             "/api/locations/within**",
                                             "/api/locations/withinWithTime**",
                                             "/api/users/all",
-                                            "/api/users/query**").permitAll()
+                                            "/api/users/query**",
+                                            "/api/users/findById").permitAll()
                            .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
                            .requestMatchers(HttpMethod.POST, "/api/images/upload",
                                             "/api/locations/createLocation").authenticated() // Upload

@@ -30,4 +30,14 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
                    OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%'))
             """)
     Page<AppUser> searchUsers(@Param("query") String query, Pageable pageable);
+
+
+    @Query("select count(ul) from AppUser u join u.createdLocations ul where u.id = :id")
+    long countCreatedLocations(@Param("id") long id);
+
+    @Query("select count(ul) from AppUser u join u.likedLocations ul where u.id = :id")
+    long countLikedLocations(@Param("id") long id);
+
+    @Query("select count(ul) from AppUser u join u.joinedLocations ul where u.id = :id")
+    long countJoinedLocations(@Param("id") long id);
 }

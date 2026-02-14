@@ -8,6 +8,8 @@ import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Location;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Überlege auf MapStruct zu wechseln. Ab +10 DTOs.
@@ -15,6 +17,10 @@ import java.util.List;
 public class LocationMapper {
     public static List<LocationResponse> toLocationResponse(List<Location> locations) {
         return locations.stream().map(LocationMapper::toLocationResponse).toList();
+    }
+
+    public static Set<LocationResponse> toLocationResponseSet(Set<Location> locations) {
+        return locations.stream().map(LocationMapper::toLocationResponse).collect(Collectors.toSet());
     }
 
     public static LocationResponse toLocationResponse(Location location) {

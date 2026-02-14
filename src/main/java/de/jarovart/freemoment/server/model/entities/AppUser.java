@@ -61,17 +61,18 @@ public class AppUser {
     @Column(name = "role")
     private Set<UserRole> roles;
     private String email;
+    private String aboutMe;
     private LocalDateTime createdAt;
 
     // Banning fields
     private Boolean isBanned;
     private LocalDateTime bannedUntil;
 
-    @OneToMany(mappedBy = "createdUser")
+    @OneToMany(mappedBy = "createdUser", fetch = FetchType.LAZY)
     private List<Location> createdLocations = new ArrayList<>();
-    @ManyToMany(mappedBy = "likedByUsers")
+    @ManyToMany(mappedBy = "likedByUsers", fetch = FetchType.LAZY)
     private Set<Location> likedLocations = new HashSet<>();
-    @ManyToMany(mappedBy = "joinedUsers")
+    @ManyToMany(mappedBy = "joinedUsers", fetch = FetchType.LAZY)
     private Set<Location> joinedLocations = new HashSet<>();
 
     public AppUser() {

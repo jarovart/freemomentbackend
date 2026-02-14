@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.controller;
 
+import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.services.UserService;
 import org.slf4j.Logger;
@@ -35,5 +36,14 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> byQuery(@RequestParam String query) {
         log.info("GET /api/users/query={}", query);
         return ResponseEntity.ok(userService.searchByQuery(query));
+    }
+
+    @GetMapping("/findById")
+    public ResponseEntity<UserFullResponse> findById(@RequestParam long id) {
+        log.info("GET /api/users/id={}", id);
+        return userService.findById(id)
+                          .map(ResponseEntity::ok)
+                          .orElse(ResponseEntity.notFound()
+                                                .build());
     }
 }
