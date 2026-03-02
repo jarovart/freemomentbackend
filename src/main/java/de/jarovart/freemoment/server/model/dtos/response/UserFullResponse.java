@@ -10,6 +10,10 @@ public class UserFullResponse extends UserResponse {
     private long likedLocationCount;
     private long joinedLocationCount;
 
+    private UserFullResponse() {
+        super();
+    }
+
     public UserFullResponse(Long id, String username, String firstName, String lastName, String profileUrl,
                             String aboutMe, long likedLocationCount, long joinedLocationCount) {
         super(id, username, firstName, lastName, profileUrl);

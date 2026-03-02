@@ -37,6 +37,7 @@ public class DbSeeding {
             user.setEmail("info@jarovart.de");
             user.setAboutMe("about me? i am the admin");
             user.setPassword(passwordEncoder.encode("test"));
+            user.setCreatedAt(LocalDateTime.now());
             user.setRoles(Set.of(UserRole.ROLE_USER));
             userRepository.save(user);
 
@@ -48,6 +49,7 @@ public class DbSeeding {
             user1.setEmail("info@jarovart.de");
             user1.setAboutMe("what should I tell u?");
             user1.setProfileUrl("/api/images/44c58561-5513-49b8-b539-4ee6d1644c5b.jpg");
+            user1.setCreatedAt(LocalDateTime.now());
             user1.setPassword(passwordEncoder.encode("test123"));
             user1.setRoles(Set.of(UserRole.ROLE_USER));
             userRepository.save(user1);

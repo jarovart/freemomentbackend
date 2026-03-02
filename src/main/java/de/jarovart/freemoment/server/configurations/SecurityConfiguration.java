@@ -61,11 +61,13 @@ public class SecurityConfiguration {
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
-                                            "/api/locations/withinWithTime**",
-                                            "/api/users/all",
-                                            "/api/users/query**",
-                                            "/api/users/findById").permitAll()
+                                            "/api/locations/withinWithTime**").permitAll()
                            .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
+                           .requestMatchers(HttpMethod.GET,
+                                            "/api/users/all",
+                                            "/api/users/query",
+                                            "/api/users/id",
+                                            "/api/users/me").authenticated()
                            .requestMatchers(HttpMethod.POST, "/api/images/upload",
                                             "/api/locations/createLocation").authenticated() // Upload
                            .anyRequest()

@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.util;
 
+import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
@@ -31,5 +32,21 @@ public class UserMapper {
                 user.getAboutMe(),
                 countLikedLocations,
                 countJoinedLocations);
+    }
+
+    public static MyUserFullResponse toMyUserFullResponse(AppUser user, long countLikedLocations,
+                                                          long countJoinedLocations, long createdLocations) {
+        return new MyUserFullResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getProfileUrl(),
+                user.getAboutMe(),
+                countLikedLocations,
+                countJoinedLocations,
+                user.getEmail(),
+                user.getCreatedAt(),
+                createdLocations);
     }
 }

@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.controller;
 
+import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.services.UserService;
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +44,17 @@ public class UserController {
     public ResponseEntity<UserFullResponse> findById(@RequestParam long id) {
         log.info("GET /api/users/id={}", id);
         return userService.findById(id)
+                          .map(ResponseEntity::ok)
+                          .orElse(ResponseEntity.notFound()
+                                                .build());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<MyUserFullResponse> getMyProfile(Authentication authentication) {
+        log.info("GET /api/users/me={}", authentication.getName());
+        // authentication.getName() = username (bei JWT sub=username)
+        String username = authentication.getName();
+        return userService.getMyProfile(username)
                           .map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound()
                                                 .build());

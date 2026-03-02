@@ -10,7 +10,7 @@ public class UserResponse {
     private String lastName;
     private String profileUrl;
 
-    private UserResponse() {
+    protected UserResponse() {
     }
 
     public UserResponse(Long id, String username, String firstName, String lastName, String profileUrl) {

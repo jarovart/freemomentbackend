@@ -64,7 +64,7 @@ public class AuthenticationService implements UserDetailsService {
                                                                        .stream()
                                                                        .map(UserRole::getRoleName)
                                                                        .collect(Collectors.joining(","))));
-        return new LoginResponse(token, appUser.getUsername());
+        return new LoginResponse(token, appUser.getUsername(), appUser.getId());
     }
 
     @Transactional

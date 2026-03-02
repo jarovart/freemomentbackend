@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.services;
 
+import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
@@ -41,6 +42,17 @@ public class UserService {
             long countJoinedLocations = userRepository.countJoinedLocations(u.getId());
             return UserMapper.toUserFullResponse(u, countLikedLocations,
                                                  countJoinedLocations);
+        });
+    }
+
+    public Optional<MyUserFullResponse> getMyProfile(String username) {
+        Optional<AppUser> appUser = userRepository.findByUsername(username);
+        return appUser.map(u -> {
+            long countLikedLocations = userRepository.countLikedLocations(u.getId());
+            long countJoinedLocations = userRepository.countJoinedLocations(u.getId());
+            long countCreatedLocations = userRepository.countCreatedLocations(u.getId());
+            return UserMapper.toMyUserFullResponse(u, countLikedLocations,
+                                                   countJoinedLocations, countCreatedLocations);
         });
     }
 }
