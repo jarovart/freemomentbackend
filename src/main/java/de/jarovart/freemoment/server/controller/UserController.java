@@ -1,9 +1,11 @@
 package de.jarovart.freemoment.server.controller;
 
+import de.jarovart.freemoment.server.model.dtos.requests.UpdateMyProfileRequest;
 import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.services.UserService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,6 +60,18 @@ public class UserController {
         String username = authentication.getName();
         return userService.getMyProfile(username)
                           .map(ResponseEntity::ok)
+                          .orElse(ResponseEntity.notFound()
+                                                .build());
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<MyUserFullResponse> updateMyProfile(
+            Authentication authentication,
+            @Valid @RequestBody UpdateMyProfileRequest request
+    ) {
+        log.info("Patch /api/users/me={}", authentication.getName());
+        String username = authentication.getName();
+        return userService.updateMyProfile(username, request).map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound()
                                                 .build());
     }

@@ -62,7 +62,8 @@ public class SecurityConfiguration {
                                             "/api/locations/search**",
                                             "/api/locations/within**",
                                             "/api/locations/withinWithTime**").permitAll()
-                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**").permitAll()
+                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**",
+                                            "/api/users/me").permitAll()
                            .requestMatchers(HttpMethod.GET,
                                             "/api/users/all",
                                             "/api/users/query",
@@ -70,6 +71,8 @@ public class SecurityConfiguration {
                                             "/api/users/me").authenticated()
                            .requestMatchers(HttpMethod.POST, "/api/images/upload",
                                             "/api/locations/createLocation").authenticated() // Upload
+                           .requestMatchers(HttpMethod.PATCH,
+                                            "/api/users/me").authenticated()
                            .anyRequest()
                            .authenticated())
                    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -83,7 +86,7 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(false);
 
