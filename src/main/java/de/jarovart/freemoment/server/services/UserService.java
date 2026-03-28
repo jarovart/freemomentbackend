@@ -59,6 +59,7 @@ public class UserService {
         });
     }
 
+    @Transactional
     public Optional<MyUserFullResponse> updateMyProfile(String username, UpdateMyProfileRequest request) {
         AppUser user = userRepository.findByUsername(username)
                                      .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
