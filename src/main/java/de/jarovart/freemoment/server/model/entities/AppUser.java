@@ -68,13 +68,19 @@ public class AppUser {
     private Boolean isBanned;
     private LocalDateTime bannedUntil;
 
+    @OneToMany(mappedBy = "uploadedByUser", fetch = FetchType.LAZY)
+    private List<Image> uploadedImages = new ArrayList<>();
     @OneToMany(mappedBy = "createdUser", fetch = FetchType.LAZY)
     private List<Location> createdLocations = new ArrayList<>();
-    @ManyToMany(mappedBy = "likedByUsers", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "likedUsers", fetch = FetchType.LAZY)
     private Set<Location> likedLocations = new HashSet<>();
     @ManyToMany(mappedBy = "joinedUsers", fetch = FetchType.LAZY)
     private Set<Location> joinedLocations = new HashSet<>();
 
     public AppUser() {
+    }
+
+    public String getProfileUrl() {
+        return "/api/images/" + profileUrl;
     }
 }

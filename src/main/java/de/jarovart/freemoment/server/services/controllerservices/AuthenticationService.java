@@ -11,6 +11,7 @@ import de.jarovart.freemoment.server.model.entities.PasswordResetToken;
 import de.jarovart.freemoment.server.model.entities.PendingUser;
 import de.jarovart.freemoment.server.model.enums.UserRole;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.repository.PasswordResetTokenRepository;
 import de.jarovart.freemoment.server.repository.PendingUserRepository;
 import de.jarovart.freemoment.server.repository.UserRepository;
@@ -20,7 +21,6 @@ import de.jarovart.freemoment.server.util.Util_General;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,7 +60,8 @@ public class AuthenticationService implements UserDetailsService {
         }
         AppUser appUser = optionalAppUser.get();
         String token = jwtService.generateToken(appUser.getUsername(),
-                                                Map.of("roles", appUser.getRoles()
+                                                Map.of("userId", appUser.getId(),
+                                                       "roles", appUser.getRoles()
                                                                        .stream()
                                                                        .map(UserRole::getRoleName)
                                                                        .collect(Collectors.joining(","))));
@@ -225,13 +226,35 @@ public class AuthenticationService implements UserDetailsService {
         passwordResetTokenRepository.save(passwordResetToken);
     }
 
+
+    public UserDetails loadUserById(String id) throws UsernameNotFoundException {
+        AppUser user = userRepository.findByUsername(id)
+                                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return new JarovartUserDetails(
+                user.getId(),
+                user.getUsername(),
+                user.getPassword(),
+                user.getRoles()
+                    .stream()
+                    .map(UserRole::getRoleName)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toSet())
+        );
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser user = userRepository.findByUsername(username)
                                      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return new User(user.getUsername(), user.getPassword(),
-                        user.getRoles().stream().map(UserRole::getRoleName).map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toSet())
+        return new JarovartUserDetails(
+                user.getId(),
+                user.getUsername(),
+                user.getPassword(),
+                user.getRoles()
+                    .stream()
+                    .map(UserRole::getRoleName)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toSet())
         );
     }
 }

@@ -56,23 +56,34 @@ public class SecurityConfiguration {
                                             "/h2-console/**"
                            )
                            .permitAll()
-                           .requestMatchers(HttpMethod.GET, "/api/images/**",
+                           .requestMatchers(HttpMethod.GET,
+                                            "/api/images/**",
                                             "/api/locations/**",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
                                             "/api/locations/withinWithTime**").permitAll()
-                           .requestMatchers(HttpMethod.OPTIONS, "/api/auth/**",
+                           .requestMatchers(HttpMethod.OPTIONS,
+                                            "/api/auth/**",
                                             "/api/users/me").permitAll()
                            .requestMatchers(HttpMethod.GET,
                                             "/api/users/all",
                                             "/api/users/query",
                                             "/api/users/id",
-                                            "/api/users/me").authenticated()
-                           .requestMatchers(HttpMethod.POST, "/api/images/upload",
-                                            "/api/locations/createLocation").authenticated() // Upload
+                                            "/api/users/me",
+                                            "api/locations/*/like",
+                                            "api/locations/*/join").authenticated()
+                           .requestMatchers(HttpMethod.DELETE,
+                                            "api/locations/*/like",
+                                            "api/locations/*/join").authenticated()
+                           .requestMatchers(HttpMethod.POST,
+                                            "/api/images/upload",
+                                            "/api/locations/createLocation",
+                                            "api/locations/*/like",
+                                            "api/locations/*/join").authenticated() // Upload
                            .requestMatchers(HttpMethod.PATCH,
                                             "/api/users/me").authenticated()
+                           .requestMatchers("/api/auth/**", "/h2-console/**", "/error").permitAll()
                            .anyRequest()
                            .authenticated())
                    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

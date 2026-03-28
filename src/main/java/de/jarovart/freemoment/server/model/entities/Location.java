@@ -4,6 +4,7 @@
  */
 package de.jarovart.freemoment.server.model.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,16 +15,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
-import net.datafaker.Faker;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  *
@@ -51,8 +49,11 @@ public class Location {
     private Double latitude;
     @Column(nullable = false)
     private Double longitude;
-    private String thumbnailUrl;
-    private List<String> imageUrls;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "thumbnail_image_id")
+    private Image thumbnailImage;
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Image> images = new HashSet<>();
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_user_id")
     private AppUser createdUser;
@@ -60,7 +61,7 @@ public class Location {
     @JoinTable(name = "location_liked_by_users",
             joinColumns = @JoinColumn(name = "location_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<AppUser> likedByUsers = new HashSet<>();
+    private Set<AppUser> likedUsers = new HashSet<>();
     @ManyToMany
     @JoinTable(name = "location_joined_users",
             joinColumns = @JoinColumn(name = "location_id"),
@@ -73,7 +74,7 @@ public class Location {
 
     public Location(String title, String description, String address, LocalDateTime creationDateTime,
                     LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
-                    String thumbnailUrl, List<String> imageUrls, AppUser createdUser) {
+                    AppUser createdUser) {
         this.title = title;
         this.description = description;
         this.address = address;
@@ -82,43 +83,8 @@ public class Location {
         this.endDateTime = endDateTime;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.thumbnailUrl = thumbnailUrl;
-        this.imageUrls = imageUrls;
         this.createdUser = createdUser;
-        this.likedByUsers = new HashSet<>();
+        this.likedUsers = new HashSet<>();
         this.joinedUsers = new HashSet<>();
-    }
-
-
-    //@PrePersist
-    public void prePersist() {
-        if (creationDateTime == null) {
-            creationDateTime = LocalDateTime.now();
-            System.out.println("Location.prePersist() - created new date: " + creationDateTime.toString());
-        }
-        if (createdUser == null) {
-            createdUser = new AppUser();
-            Faker faker = new Faker();
-            createdUser.setUsername(faker.internet().username());
-            createdUser.setEmail(faker.internet().emailAddress());
-            System.out.println(
-                    "Location.prePersist() - created new user: " + createdUser.getUsername() + ", " + createdUser.getEmail());
-        }
-        if (joinedUsers.isEmpty()) {
-            Faker faker = new Faker();
-            IntStream.range(0, (int) (Math.random() * 10)).forEach(
-                    i -> {
-                        AppUser user = new AppUser();
-                        user.setUsername(faker.internet().username());
-                        user.setEmail(faker.internet().emailAddress());
-                        joinedUsers.add(user);
-                        likedByUsers.add(user);
-                    }
-            );
-            System.out.println("Location.prePersist() - created " + joinedUsers.size() + " joined/likedBy users: " +
-                                       joinedUsers.stream()
-                                                  .map(AppUser::getUsername)
-                                                  .collect(Collectors.joining(",")));
-        }
     }
 }

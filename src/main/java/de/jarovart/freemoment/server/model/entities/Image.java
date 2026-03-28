@@ -33,7 +33,11 @@ public class Image {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "uploaded_by_user_id")
-    private AppUser appUser;
+    private AppUser uploadedByUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     public String getUrl() {
         return "/api/images/" + filename;

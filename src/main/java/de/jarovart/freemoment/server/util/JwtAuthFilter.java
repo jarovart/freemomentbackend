@@ -4,6 +4,7 @@
  */
 package de.jarovart.freemoment.server.util;
 
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
 import jakarta.servlet.FilterChain;
@@ -11,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -41,7 +41,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 String username = jwtService.parseToken(token).getBody().getSubject();
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = authenticationService.loadUserByUsername(username);
+                    JarovartUserDetails userDetails = (JarovartUserDetails) authenticationService.loadUserByUsername(
+                            username);
                     if (jwtService.isTokenValid(token, userDetails.getUsername())) {
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(userDetails, null,

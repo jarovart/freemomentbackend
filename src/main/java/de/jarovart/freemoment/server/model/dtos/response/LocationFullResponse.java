@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class LocationFullResponse {
@@ -23,19 +23,21 @@ public class LocationFullResponse {
     private Double latitude;
     @NotNull
     private Double longitude;
-    private String thumbnailUrl;
-    private List<String> imageUrls;
+    private ImageResponse thumbnailImage;
+    private Set<ImageResponse> images;
     private Long createdUserId;
     private String createdUsername;
-    private List<UserResponse> joinedUsers;
-    private List<UserResponse> likedUsers;
+    private long likedUserCount;
+    private long joinedUserCount;
+    private Boolean likedByCurrentUser;
+    private Boolean joinedByCurrentUser;
 
     public LocationFullResponse(Long id, String title, String description, String address,
-                                LocalDateTime creationDateTime,
-                                LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude,
-                                Double longitude, String thumbnailUrl, List<String> imageUrls, Long createdUserId,
-                                String createdUsername,
-                                List<UserResponse> joinedUsers, List<UserResponse> likedUsers) {
+                                LocalDateTime creationDateTime, LocalDateTime startDateTime, LocalDateTime endDateTime,
+                                Double latitude, Double longitude, ImageResponse thumbnailImage,
+                                Set<ImageResponse> images, Long createdUserId, String createdUsername,
+                                long likedUserCount, long joinedUserCount, Boolean likedByCurrentUser,
+                                Boolean joinedByCurrentUser) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -45,12 +47,14 @@ public class LocationFullResponse {
         this.endDateTime = endDateTime;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.thumbnailUrl = thumbnailUrl;
-        this.imageUrls = imageUrls;
+        this.thumbnailImage = thumbnailImage;
+        this.images = images;
         this.createdUserId = createdUserId;
         this.createdUsername = createdUsername;
-        this.joinedUsers = joinedUsers;
-        this.likedUsers = likedUsers;
+        this.likedUserCount = likedUserCount;
+        this.joinedUserCount = joinedUserCount;
+        this.likedByCurrentUser = likedByCurrentUser;
+        this.joinedByCurrentUser = joinedByCurrentUser;
 
     }
 }

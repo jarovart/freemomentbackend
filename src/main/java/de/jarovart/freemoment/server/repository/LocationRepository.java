@@ -24,7 +24,12 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     public List<Location> findByLatitudeBetweenAndLongitudeBetween(double minLat, double maxLat, double minLng,
                                                                    double maxLng, Pageable pageable);
 
-    @Query("SELECT l FROM Location l WHERE l.latitude BETWEEN :minLat AND :maxLat AND l.longitude BETWEEN :minLng AND :maxLng")
+    @Query("""
+            SELECT l FROM Location l
+            left join fetch l.thumbnailImage
+            WHERE l.latitude
+            BETWEEN :minLat AND :maxLat AND l.longitude
+            BETWEEN :minLng AND :maxLng""")
     public List<Location> findWithinBounds(@Param("minLat") double minLat, @Param("maxLat") double maxLat,
                                            @Param("minLng") double minLng, @Param("maxLng") double maxLng);
 
@@ -33,6 +38,7 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     @Query("""
             select l from Location l
+            left join fetch l.thumbnailImage
             where l.latitude between :minLat and :maxLat
               and l.longitude between :minLng and :maxLng
               and l.startDateTime <= :rangeEnd
@@ -48,13 +54,34 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
                 select l from Location l
                 left join fetch l.createdUser
                 left join fetch l.joinedUsers
-                left join fetch l.likedByUsers
+                left join fetch l.likedUsers
+                left join fetch l.images
+                left join fetch l.thumbnailImage
                 where l.id = :id
             """)
     Optional<Location> findByIdWithUsers(@Param("id") Long id);
 
     @Query("""
+                select l from Location l
+                left join fetch l.createdUser
+                left join fetch l.images
+                left join fetch l.thumbnailImage
+                where l.id = :id
+            """)
+    Optional<Location> findByIdWithCreatedUserAndImages(@Param("id") Long id);
+
+    @Query("""
+                select l from Location l
+                left join fetch l.thumbnailImage
+                left join fetch l.images
+                left join fetch l.createdUser
+                where l.id = :id
+            """)
+    Optional<Location> findByIdFull(@Param("id") Long id);
+
+    @Query("""
             select l from Location l
+            left join fetch l.thumbnailImage
             where l.startDateTime >= :start and l.endDateTime <= :end
             and l.latitude between :minLat and :maxLat
             and l.longitude between :minLng and :maxLng
@@ -81,6 +108,7 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     @Query(value = """
             select * from locations l
+            left join fetch l.thumbnailImage
             where l.start_date_time >= :start and l.end_date_time <= :end
             and (:q is null or l.title ilike concat('%', :q, '%') or l.description ilike concat('%', :q, '%'))
             and ST_DWithin(
@@ -109,4 +137,41 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             @Param("maxLng") double maxLng,
             @Param("q") String q, Pageable pageable);
 
+    List<Location> findByCreatedUser_Id(Long userId);
+
+    @Query("""
+                select l
+                from Location l
+                join l.joinedUsers u
+                where u.id = :userId
+            """)
+    List<Location> findJoinedLocationsByUserId(Long userId);
+
+    @Query("""
+                select l
+                from Location l
+                join l.likedUsers u
+                where u.id = :userId
+            """)
+    List<Location> findLikedLocationsByUserId(Long userId);
+
+    @Query("""
+                select count(u)
+                from Location l
+                join l.joinedUsers u
+                where l.id = :locationId
+            """)
+    long countJoinedUsersByLocationId(@Param("locationId") Long locationId);
+
+    @Query("""
+                select count(u)
+                from Location l
+                join l.likedUsers u
+                where l.id = :locationId
+            """)
+    long countLikedUsersByLocationId(@Param("locationId") Long locationId);
+
+    boolean existsByIdAndLikedUsers_Id(Long locationId, Long userId);
+
+    boolean existsByIdAndJoinedUsers_Id(Long locationId, Long userId);
 }

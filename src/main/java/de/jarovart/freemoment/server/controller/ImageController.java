@@ -1,6 +1,7 @@
 package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.services.controllerservices.ImageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,13 +49,27 @@ public class ImageController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<ImageResponse>> upload(
-            @RequestParam("files") List<MultipartFile> files, @AuthenticationPrincipal UserDetails principal) {
-        log.info("POST /upload files request: {} from {}",
-                 files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")), principal.getUsername());
+    public ResponseEntity<List<ImageResponse>> uploadThumbnailForUser(
+            @RequestParam("files") List<MultipartFile> files,
+            @AuthenticationPrincipal JarovartUserDetails authentication) {
+        log.info("POST /upload image files request: {} from {}",
+                 files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")),
+                 authentication.getUsername());
 
-        List<ImageResponse> imageResponses = imageService.store(files, principal.getUsername());
+        List<ImageResponse> imageResponses = imageService.storeImages(files, authentication.getId());
         return ResponseEntity.ok(imageResponses);
+    }
+
+    @PostMapping("/uploadImages")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<ImageResponse>> uploadImagesForLocation(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam Long locationId,
+            @AuthenticationPrincipal JarovartUserDetails authentication) {
+        log.info("POST /upload images file request with locationid {}: {} by {}", locationId,
+                 files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")),
+                 authentication.getUsername());
+        return ResponseEntity.ok(imageService.storeImages(files, authentication.getId(), locationId));
     }
 
     @DeleteMapping("/{imageId}")

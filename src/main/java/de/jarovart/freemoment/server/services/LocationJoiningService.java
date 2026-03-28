@@ -12,32 +12,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class LocationLikerService {
+public class LocationJoiningService {
     @Autowired
     private LocationRepository locationRepository;
     @Autowired
     private UserRepository userRepository;
 
-
-    public boolean hasUserLiked(Long locationId, Long userId) {
-        return locationRepository.existsByIdAndLikedUsers_Id(locationId, userId);
+    public boolean hasUserJoined(Long locationId, Long userId) {
+        return locationRepository.existsByIdAndJoinedUsers_Id(locationId, userId);
     }
 
     @Transactional
-    public void likeLocation(Long locationId, Long userId) {
+    public void joinLocation(Long locationId, Long userId) {
         Location location = locationRepository.findById(locationId)
                                               .orElseThrow(() -> new EntityNotFoundException("Location not found"));
         AppUser user = userRepository.findById(userId)
                                      .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        location.getLikedUsers().add(user);
+        location.getJoinedUsers().add(user);
     }
 
     @Transactional
-    public void unlikeLocation(Long locationId, Long userId) {
+    public void unjoinLocation(Long locationId, Long userId) {
         Location location = locationRepository.findById(locationId)
                                               .orElseThrow(() -> new EntityNotFoundException("Location not found"));
         AppUser user = userRepository.findById(userId)
                                      .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        location.getLikedUsers().remove(user);
+        location.getJoinedUsers().remove(user);
     }
 }

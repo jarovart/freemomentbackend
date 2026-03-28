@@ -5,8 +5,11 @@
 package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.UpdateThumbnailRequest;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
+import de.jarovart.freemoment.server.services.LocationJoiningService;
 import de.jarovart.freemoment.server.services.LocationLikerService;
 import de.jarovart.freemoment.server.services.LocationService;
 import jakarta.validation.Valid;
@@ -19,10 +22,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,43 +51,49 @@ public class LocationController {
     @Autowired
     private LocationLikerService locationLikerService;
     @Autowired
+    private LocationJoiningService locationJoiningService;
+    @Autowired
     private LocationService locationService;
 
     @GetMapping
-    public ResponseEntity<List<LocationResponse>> getAllLocations(@RequestParam(defaultValue = "100") int limit) {
+    public ResponseEntity<List<LocationResponse>> getAllLocations(@RequestParam(defaultValue = "100") int limit,
+                                                                  @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /api/locations");
-        return ResponseEntity.ok(locationService.getAllLocations(limit));
+        Long userId = user != null ? user.getId() : null;
+        return ResponseEntity.ok(locationService.getAllLocations(limit, userId));
     }
 
     @GetMapping("/within")
     public ResponseEntity<List<LocationResponse>> getLocationsWithinBounds(
             @RequestParam double minLat, @RequestParam double maxLat, @RequestParam double minLng,
-            @RequestParam double maxLng) {
+            @RequestParam double maxLng,
+            @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /within bounds lat=[{},{}] lng=[{},{}]", minLat, maxLat, minLng, maxLng);
-
-        return ResponseEntity.ok(locationService.getLocationsWithinBounds(minLat, maxLat, minLng, maxLng)
-                                                .stream()
-                                                .toList());
+        Long userId = user != null ? user.getId() : null;
+        return ResponseEntity.ok(locationService.getLocationsWithinBounds(minLat, maxLat, minLng, maxLng, userId));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<LocationResponse>> search(@RequestParam String query) {
+    public ResponseEntity<List<LocationResponse>> search(@RequestParam String query,
+                                                         @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /search query={}", query);
         if (query == null || query.trim()
                                   .length() < 3) {
             return ResponseEntity.badRequest()
                                  .build();
         }
-        return ResponseEntity.ok(locationService.search(query.trim()));
+        Long userId = user != null ? user.getId() : null;
+        return ResponseEntity.ok(locationService.search(query.trim(), userId));
     }
 
     @GetMapping("/findById")
-    public ResponseEntity<LocationFullResponse> search(@RequestParam Long id) {
+    public ResponseEntity<LocationFullResponse> findById(@RequestParam Long id,
+                                                         @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /findById={} location wurde aufgerufen", id);
-        return locationService.getLocationById(id)
-                              .map(ResponseEntity::ok)           // 200 + Body
-                              .orElse(ResponseEntity.notFound()
-                                                    .build()); // 404
+        Long userId = user != null ? user.getId() : null;
+        LocationFullResponse loc = locationService.getLocationById(id, userId);
+        log.info("loc {} {}", loc.toString(), user);
+        return ResponseEntity.ok(loc);
     }
 
     @GetMapping("/withinWithTime")
@@ -92,11 +101,13 @@ public class LocationController {
             @RequestParam double minLat, @RequestParam double maxLat,
             @RequestParam double minLng, @RequestParam double maxLng,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd,
+            @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /within bounds lat=[{},{}] lng=[{},{}] between {} and {}", minLat, maxLat, minLng, maxLng,
                  rangeStart, rangeEnd);
+        Long userId = user != null ? user.getId() : null;
         return ResponseEntity.ok(locationService.getLocationsWithinBoundsAndRange(minLat, maxLat, minLng, maxLng,
-                                                                                  rangeStart, rangeEnd)
+                                                                                  rangeStart, rangeEnd, userId)
                                                 .stream()
                                                 .toList());
     }
@@ -110,59 +121,93 @@ public class LocationController {
             @RequestParam double lng,
             @RequestParam double radiusKm,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
+            @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /sliceFilterSettings bounds query={} with page=[{},{}] Position: [lat={} lng={} radius={}]"
                          + " startTime: {}, endTime={}", query, page, size, lat, lng, radiusKm, startDateTime,
                  endDateTime);
+        Long userId = user != null ? user.getId() : null;
         return locationService.getSliceLocationsByFilterSettings(page, size, query, lat, lng, radiusKm,
-                                                                 startDateTime, endDateTime);
+                                                                 startDateTime, endDateTime, userId);
     }
 
 
+    /**
+     * Creates a Location Entity and returns a LocationResponse (Base), which will be used for location map.
+     *
+     * @param locationCreateRequest the request for creating a location.
+     * @param user                  the current user, who created the location.
+     * @return a location response.
+     */
     @PostMapping("/createLocation")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<LocationResponse> createLocation(
             @Valid @RequestBody LocationCreateRequest locationCreateRequest
-            , @AuthenticationPrincipal UserDetails principal) {
-        log.info("Authorities: {}", principal.getAuthorities());
-        log.info("POST /createLocation request: {} from {}", locationCreateRequest.getTitle(), principal.getUsername());
+            , @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("Authorities: {}", user.getAuthorities());
+        log.info("POST /createLocation request: {} from {}", locationCreateRequest.getTitle(), user.getUsername());
         LocationResponse createdLocation = locationService.createLocation(locationCreateRequest,
-                                                                          principal.getUsername());
+                                                                          user.getId());
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 🔥 201
                 .body(createdLocation);
     }
 
-    /**
-     * {@Code: Authentication authentication alternative mit mehr boilerplate}
-     *
-     * @param locationId
-     * @param user
-     * @return
-     */
+    @PatchMapping("/{locationId}/thumbnail")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<LocationResponse> updateThumbnailLocation(@PathVariable Long locationId,
+                                                                    @RequestBody UpdateThumbnailRequest updateThumbnailRequest,
+                                                                    @AuthenticationPrincipal JarovartUserDetails principal) {
+        log.info("PATCH /updateThumbnail of locationid {} request: {} by {}", locationId,
+                 updateThumbnailRequest.getImageId(), principal.getUsername());
+        return ResponseEntity.ok(
+                locationService.updateThumbnailLocation(locationId, updateThumbnailRequest, principal.getId()));
+    }
+
+    @GetMapping("/{locationId}/like")
+    public ResponseEntity<Boolean> hasLike(@PathVariable Long locationId,
+                                           @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("GET /api/locations/{}/like request by {}", locationId, user.getUsername());
+        boolean returnedValue = locationLikerService.hasUserLiked(locationId, user.getId());
+        return ResponseEntity.ok(returnedValue);
+    }
+
     @PostMapping("/{locationId}/like")
-    public ResponseEntity<Void> like(@PathVariable Long locationId, @AuthenticationPrincipal UserDetails user) {
-        locationLikerService.likeLocation(locationId, user.getUsername());
+    public ResponseEntity<Void> like(@PathVariable Long locationId, @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("POST /api/locations/{}/like request by {}", locationId, user.getUsername());
+        locationLikerService.likeLocation(locationId, user.getId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{locationId}/like")
-    public ResponseEntity<Void> unlike(@PathVariable Long locationId, @AuthenticationPrincipal UserDetails user) {
-        locationLikerService.unlikeLocation(locationId, user.getUsername());
+    public ResponseEntity<Void> unlike(@PathVariable Long locationId,
+                                       @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("DELETE /api/locations/{}/like request by {}", locationId, user.getUsername());
+        locationLikerService.unlikeLocation(locationId, user.getId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/join")
-    public ResponseEntity<Void> joinLocation(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+    @GetMapping("/{locationId}/join")
+    public ResponseEntity<Boolean> hasJoin(@PathVariable Long locationId,
+                                           @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("GET /api/locations/{}/join request by {}", locationId, user.getUsername());
+        boolean returnedValue = locationJoiningService.hasUserJoined(locationId, user.getId());
+        return ResponseEntity.ok(returnedValue);
+    }
 
-        locationService.joinLocation(id, user.getUsername());
+    @PostMapping("/{locationId}/join")
+    public ResponseEntity<Void> joinLocation(@PathVariable Long locationId,
+                                             @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("POST /api/locations/{}/join request by {}", locationId, user.getUsername());
+        locationJoiningService.joinLocation(locationId, user.getId());
         return ResponseEntity.noContent().build(); // 204
     }
 
-    @DeleteMapping("/{id}/join")
-    public ResponseEntity<Void> leaveLocation(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
-
-        locationService.leaveLocation(id, user.getUsername());
+    @DeleteMapping("/{locationId}/join")
+    public ResponseEntity<Void> leaveLocation(@PathVariable Long locationId,
+                                              @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("DELETE /api/locations/{}/join request by {}", locationId, user.getUsername());
+        locationJoiningService.unjoinLocation(locationId, user.getId());
         return ResponseEntity.noContent().build(); // 204
     }
 }

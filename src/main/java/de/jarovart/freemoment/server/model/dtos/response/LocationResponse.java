@@ -24,16 +24,19 @@ public class LocationResponse {
     private Double latitude;
     @NotNull
     private Double longitude;
-    private String thumbnailUrl;
+    private ImageResponse thumbnailImage;
     private Long createdUserId;
     private String createdUsername;
-    private int joinedUserCount;
-    private int likedUserCount;
+    private long likedUserCount;
+    private long joinedUserCount;
+    private Boolean likedByCurrentUser;
+    private Boolean joinedByCurrentUser;
 
     public LocationResponse(Long id, String title, String description, String address, LocalDateTime creationDateTime,
                             LocalDateTime startDateTime, LocalDateTime endDateTime, Double latitude, Double longitude,
-                            String thumbnailUrl, Long createdUserId, String createdUsername, int joinedUserCount,
-                            int likedUserCount) {
+                            ImageResponse thumbnailImage, Long createdUserId, String createdUsername,
+                            long likedUserCount, long joinedUserCount, Boolean likedByCurrentUser,
+                            Boolean joinedByCurrentUser) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -43,10 +46,12 @@ public class LocationResponse {
         this.endDateTime = endDateTime;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnailImage = thumbnailImage;
         this.createdUserId = createdUserId;
         this.createdUsername = createdUsername;
-        this.joinedUserCount = joinedUserCount;
         this.likedUserCount = likedUserCount;
+        this.joinedUserCount = joinedUserCount;
+        this.likedByCurrentUser = likedByCurrentUser;
+        this.joinedByCurrentUser = joinedByCurrentUser;
     }
 }
