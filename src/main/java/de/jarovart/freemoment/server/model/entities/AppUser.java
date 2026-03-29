@@ -5,9 +5,12 @@
 package de.jarovart.freemoment.server.model.entities;
 
 import de.jarovart.freemoment.server.model.enums.UserRole;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,12 +39,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {
-        "password",
-        "createdLocations",
-        "likedLocations",
-        "joinedLocations"
-})
+@ToString(exclude = {"password", "createdLocations", "likedLocations", "joinedLocations", "profileImage", "uploadedImages"})
 public class AppUser {
 
     @Id
@@ -50,7 +49,9 @@ public class AppUser {
     private String username;
     private String firstName;
     private String lastName;
-    private String profileUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_image_id")
+    private Image profileImage;
     private String password; // BCrypt-hash
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -68,6 +69,15 @@ public class AppUser {
     private Boolean isBanned;
     private LocalDateTime bannedUntil;
 
+    // User profile image display settings
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "scale", column = @Column(name = "profile_image_scale")),
+            @AttributeOverride(name = "offsetX", column = @Column(name = "profile_image_offset_x")),
+            @AttributeOverride(name = "offsetY", column = @Column(name = "profile_image_offset_y"))
+    })
+    private ImageTransform profileImageTransform;
+
     @OneToMany(mappedBy = "uploadedByUser", fetch = FetchType.LAZY)
     private List<Image> uploadedImages = new ArrayList<>();
     @OneToMany(mappedBy = "createdUser", fetch = FetchType.LAZY)
@@ -78,9 +88,5 @@ public class AppUser {
     private Set<Location> joinedLocations = new HashSet<>();
 
     public AppUser() {
-    }
-
-    public String getProfileUrl() {
-        return "/api/images/" + profileUrl;
     }
 }

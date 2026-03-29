@@ -14,9 +14,9 @@ public class UserFullResponse extends UserResponse {
         super();
     }
 
-    public UserFullResponse(Long id, String username, String firstName, String lastName, String profileUrl,
+    public UserFullResponse(Long id, String username, String firstName, String lastName, ImageResponse profileImage,
                             String aboutMe, long likedLocationCount, long joinedLocationCount) {
-        super(id, username, firstName, lastName, profileUrl);
+        super(id, username, firstName, lastName, profileImage);
         this.aboutMe = aboutMe;
         this.likedLocationCount = likedLocationCount;
         this.joinedLocationCount = joinedLocationCount;

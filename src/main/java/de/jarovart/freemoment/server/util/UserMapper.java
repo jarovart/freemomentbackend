@@ -18,7 +18,7 @@ public class UserMapper {
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getProfileUrl());
+                ImageMapper.toImageResponse(user.getProfileImage()));
     }
 
     public static UserFullResponse toUserFullResponse(AppUser user, long countLikedLocations,
@@ -28,7 +28,7 @@ public class UserMapper {
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getProfileUrl(),
+                ImageMapper.toImageResponse(user.getProfileImage()),
                 user.getAboutMe(),
                 countLikedLocations,
                 countJoinedLocations);
@@ -41,7 +41,7 @@ public class UserMapper {
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getProfileUrl(),
+                ImageMapper.toImageResponse(user.getProfileImage()),
                 user.getAboutMe(),
                 countLikedLocations,
                 countJoinedLocations,

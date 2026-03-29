@@ -53,13 +53,10 @@ public class LocationMapper {
                                                               Boolean likedByCurrentUser, Boolean joinedByCurrentUser) {
         ImageResponse thumbnailResponse = null;
         if (location.getThumbnailImage() != null) {
-            thumbnailResponse = new ImageResponse(location.getThumbnailImage().getId(),
-                                                  location.getThumbnailImage().getUrl());
+            thumbnailResponse = ImageMapper.toImageResponse(location.getThumbnailImage());
         }
         Set<ImageResponse> imageResponses = location.getImages().stream()
-                                                    .map(image -> new ImageResponse(
-                                                            image.getId(),
-                                                            image.getUrl()))
+                                                    .map(ImageMapper::toImageResponse)
                                                     .collect(Collectors.toSet());
 
         return new LocationFullResponse(location.getId(),

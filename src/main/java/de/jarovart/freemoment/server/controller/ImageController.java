@@ -47,7 +47,7 @@ public class ImageController {
                              .body(resource);
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/uploadImage")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<ImageResponse>> uploadThumbnailForUser(
             @RequestParam("files") List<MultipartFile> files,

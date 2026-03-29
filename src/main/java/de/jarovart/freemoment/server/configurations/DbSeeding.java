@@ -61,7 +61,12 @@ public class DbSeeding {
                     "test",
                     passwordEncoder
             );
-            user.setProfileUrl(imagecc);
+            user = userRepository.save(user);
+
+            Image profileImage = createImage(user, imagecc);
+            profileImage = imageRepository.save(profileImage);
+
+            user.setProfileImage(profileImage);
             user = userRepository.save(user);
 
             AppUser user1 = createUser(

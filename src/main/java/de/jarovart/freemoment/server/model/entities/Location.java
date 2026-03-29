@@ -4,8 +4,11 @@
  */
 package de.jarovart.freemoment.server.model.entities;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -67,6 +70,15 @@ public class Location {
             joinColumns = @JoinColumn(name = "location_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<AppUser> joinedUsers = new HashSet<>();
+
+    // Location thumbnail image display settings
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "scale", column = @Column(name = "thumbnail_scale")),
+            @AttributeOverride(name = "offsetX", column = @Column(name = "thumbnail_offset_x")),
+            @AttributeOverride(name = "offsetY", column = @Column(name = "thumbnail_offset_y"))
+    })
+    private ImageTransform locationImageTransform;
 
     //Need for DB
     public Location() {

@@ -8,16 +8,16 @@ public class UserResponse {
     private String username;
     private String firstName;
     private String lastName;
-    private String profileUrl;
+    private ImageResponse profileImage;
 
-    protected UserResponse() {
+    public UserResponse() {
     }
 
-    public UserResponse(Long id, String username, String firstName, String lastName, String profileUrl) {
+    public UserResponse(Long id, String username, String firstName, String lastName, ImageResponse profileImage) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.profileUrl = profileUrl;
+        this.profileImage = profileImage;
     }
 }
