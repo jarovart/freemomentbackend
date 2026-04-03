@@ -6,6 +6,7 @@ import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.model.enums.LocationType;
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.services.UserLocationService;
 import de.jarovart.freemoment.server.services.UserService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -83,27 +85,17 @@ public class UserController {
         );
     }
 
-
     @GetMapping("/me")
-    public ResponseEntity<MyUserFullResponse> getMyProfile(Authentication authentication) {
-        log.info("GET /api/users/me={}", authentication.getName());
-        // authentication.getName() = username (bei JWT sub=username)
-        String username = authentication.getName();
-        return userService.getMyProfile(username)
-                          .map(ResponseEntity::ok)
-                          .orElse(ResponseEntity.notFound()
-                                                .build());
+    public ResponseEntity<MyUserFullResponse> getMyProfile(@AuthenticationPrincipal JarovartUserDetails userDetails) {
+        log.info("GET /api/users/me={}", userDetails.getUsername());
+        return ResponseEntity.ok(userService.getMyProfile(userDetails.getId()));
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<MyUserFullResponse> updateMyProfile(
-            Authentication authentication,
-            @Valid @RequestBody UpdateMyProfileRequest request
+    public ResponseEntity<MyUserFullResponse> updateMyProfile(@Valid @RequestBody UpdateMyProfileRequest request,
+                                                              @AuthenticationPrincipal JarovartUserDetails userDetails
     ) {
-        log.info("Patch /api/users/me={}", authentication.getName());
-        String username = authentication.getName();
-        return userService.updateMyProfile(username, request).map(ResponseEntity::ok)
-                          .orElse(ResponseEntity.notFound()
-                                                .build());
+        log.info("Patch /api/users/me={}", userDetails.getUsername());
+        return ResponseEntity.ok(userService.updateMyProfile(userDetails.getId(), request));
     }
 }

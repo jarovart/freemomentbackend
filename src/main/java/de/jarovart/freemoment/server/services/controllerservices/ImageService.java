@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,12 +61,53 @@ public class ImageService {
         return createImageResponses(images);
     }
 
+    @Transactional
+    public ImageResponse uploadMyProfileImage(MultipartFile file, Long userId) {
+        AppUser user = userRepository.findByIdFull(userId)
+                                     .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Image oldImage = user.getProfileImage();
+        Image newImage = storeUploadedImage(file, user);
+        user.setProfileImage(newImage);
+        userRepository.save(user);
+        if (oldImage != null) {
+            imageRepository.delete(oldImage);
+            deleteImage(oldImage.getFilename());
+        }
+        return createImageResponse(newImage);
+    }
 
+    @Transactional
+    public void deleteMyProfileImage(Long userId) {
+        AppUser user = userRepository.findByIdFull(userId)
+                                     .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Image image = user.getProfileImage();
+        if (image == null) {
+            return;
+        }
+
+        user.setProfileImage(null);
+        imageRepository.delete(image);
+        deleteImage(image.getFilename());
+    }
+
+    @Transactional
     public void delete(Long imageId) {
+        Image image = imageRepository.findById(imageId)
+                                     .orElseThrow(() -> new EntityNotFoundException("Image not found"));
+        imageRepository.delete(image);
+        deleteImage(image.getFilename());
+    }
+
+    private ImageResponse createImageResponse(Image image) {
+        return new ImageResponse(image.getId(), image.getFilename());
     }
 
     private List<ImageResponse> createImageResponses(List<Image> images) {
         return images.stream().map(image -> new ImageResponse(image.getId(), image.getFilename())).toList();
+    }
+
+    private Image storeUploadedImage(MultipartFile file, AppUser user) {
+        return storeUploadedImages(Collections.singletonList(file), user, null).getFirst();
     }
 
     private List<Image> storeUploadedImages(List<MultipartFile> files, AppUser user, Location location) {
@@ -94,6 +136,15 @@ public class ImageService {
             return savedImages;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store image");
+        }
+    }
+
+    private void deleteImage(String filename) {
+        try {
+            Path file = root.resolve(filename);
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image: " + filename);
         }
     }
 }

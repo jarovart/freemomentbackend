@@ -72,10 +72,20 @@ public class ImageController {
         return ResponseEntity.ok(imageService.storeImages(files, authentication.getId(), locationId));
     }
 
-    @DeleteMapping("/{imageId}")
+    @PostMapping("/me")
     @PreAuthorize("hasRole('USER')")
-    public void deleteImage(@PathVariable Long imageId) {
-        imageService.delete(imageId);
+    public ResponseEntity<ImageResponse> uploadUserProfileImage(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("POST /upload my profile {} image file request: {} ", user.getUsername(), file.getName());
+        return ResponseEntity.ok(imageService.uploadMyProfileImage(file, user.getId()));
+    }
+
+    @DeleteMapping("/me")
+    @PreAuthorize("hasRole('USER')")
+    public void deleteMyProfileImage(@AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("DELETE /api/images/me my {} profile image.", user.getUsername());
+        imageService.deleteMyProfileImage(user.getId());
     }
 
 }

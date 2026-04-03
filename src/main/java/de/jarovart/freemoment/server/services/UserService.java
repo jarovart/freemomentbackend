@@ -48,35 +48,32 @@ public class UserService {
         });
     }
 
-    public Optional<MyUserFullResponse> getMyProfile(String username) {
-        Optional<AppUser> appUser = userRepository.findByUsername(username);
-        return appUser.map(u -> {
-            long countLikedLocations = userRepository.countLikedLocations(u.getId());
-            long countJoinedLocations = userRepository.countJoinedLocations(u.getId());
-            long countCreatedLocations = userRepository.countCreatedLocations(u.getId());
-            return UserMapper.toMyUserFullResponse(u, countLikedLocations,
-                                                   countJoinedLocations, countCreatedLocations);
-        });
+    public MyUserFullResponse getMyProfile(Long userId) {
+        AppUser appUser = userRepository.findByIdFull(userId)
+                                        .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
+                                                                                        "USER_NOT_FOUND"));
+        return evaluateMyUserFullResponse(appUser);
     }
 
     @Transactional
-    public Optional<MyUserFullResponse> updateMyProfile(String username, UpdateMyProfileRequest request) {
-        AppUser user = userRepository.findByUsername(username)
+    public MyUserFullResponse updateMyProfile(Long userId, UpdateMyProfileRequest request) {
+        AppUser user = userRepository.findByIdFull(userId)
                                      .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
                                                                                      "USER_NOT_FOUND"));
-
         user.setFirstName(safeTrim(request.getFirstName()));
         user.setLastName(safeTrim(request.getLastName()));
         user.setAboutMe(safeTrim(request.getAboutMe()));
-
         AppUser savedUser = userRepository.save(user);
-        return Optional.of(savedUser).map(u -> {
-            long countLikedLocations = userRepository.countLikedLocations(u.getId());
-            long countJoinedLocations = userRepository.countJoinedLocations(u.getId());
-            long countCreatedLocations = userRepository.countCreatedLocations(u.getId());
-            return UserMapper.toMyUserFullResponse(u, countLikedLocations,
-                                                   countJoinedLocations, countCreatedLocations);
-        });
+        return evaluateMyUserFullResponse(savedUser);
+    }
+
+    public MyUserFullResponse evaluateMyUserFullResponse(AppUser user) {
+        long countLikedLocations = userRepository.countLikedLocations(user.getId());
+        long countJoinedLocations = userRepository.countJoinedLocations(user.getId());
+        long countCreatedLocations = userRepository.countCreatedLocations(user.getId());
+
+        return UserMapper.toMyUserFullResponse(user, countLikedLocations, countJoinedLocations,
+                                               countCreatedLocations);
     }
 
     private String safeTrim(String value) {

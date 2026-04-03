@@ -40,4 +40,11 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
 
     @Query("select count(ul) from AppUser u join u.joinedLocations ul where u.id = :id")
     long countJoinedLocations(@Param("id") long id);
+
+    @Query("""
+                select u from AppUser u
+                left join fetch u.profileImage
+                where u.id = :id
+            """)
+    Optional<AppUser> findByIdFull(@Param("id") Long id);
 }
