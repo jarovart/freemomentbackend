@@ -18,6 +18,8 @@ public interface PendingUserRepository extends JpaRepository<PendingUser, Long> 
 
     public Optional<PendingUser> findByEmail(String email);
 
+    public Optional<PendingUser> findByUsername(String username);
+
     public Optional<PendingUser> findByVerifyToken(String token);
 }
 

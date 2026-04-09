@@ -62,7 +62,11 @@ public class SecurityConfiguration {
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
-                                            "/api/locations/withinWithTime**").permitAll()
+                                            "/api/locations/withinWithTime**",
+                                            "/api/users/findByUsername*",
+                                            "/api/users/*/locations/created",
+                                            "/api/users/*/locations/joined"
+                           ).permitAll()
                            .requestMatchers(HttpMethod.OPTIONS,
                                             "/api/auth/**",
                                             "/api/users/me").permitAll()
@@ -71,16 +75,16 @@ public class SecurityConfiguration {
                                             "/api/users/query",
                                             "/api/users/id",
                                             "/api/users/me",
-                                            "api/locations/*/like",
-                                            "api/locations/*/join").authenticated()
+                                            "/api/locations/*/like",
+                                            "/api/locations/*/join").authenticated()
                            .requestMatchers(HttpMethod.DELETE,
-                                            "api/locations/*/like",
-                                            "api/locations/*/join").authenticated()
+                                            "/api/locations/*/like",
+                                            "/api/locations/*/join").authenticated()
                            .requestMatchers(HttpMethod.POST,
                                             "/api/images/upload",
                                             "/api/locations/createLocation",
-                                            "api/locations/*/like",
-                                            "api/locations/*/join").authenticated() // Upload
+                                            "/api/locations/*/like",
+                                            "/api/locations/*/join").authenticated() // Upload
                            .requestMatchers(HttpMethod.PATCH,
                                             "/api/users/me").authenticated()
                            .requestMatchers("/api/auth/**", "/h2-console/**", "/error").permitAll()

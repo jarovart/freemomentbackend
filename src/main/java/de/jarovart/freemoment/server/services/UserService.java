@@ -5,6 +5,7 @@ import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.repository.UserRepository;
 import de.jarovart.freemoment.server.util.UserMapper;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,20 +38,33 @@ public class UserService {
         return UserMapper.toUserResponse(userRepository.searchUsers(query, PageRequest.of(0, 20)).getContent());
     }
 
-    public Optional<UserFullResponse> findById(long id) {
-        Optional<AppUser> appUser = userRepository.findById(id);
-        return appUser.map(u -> {
-            long countLikedLocations = userRepository.countLikedLocations(u.getId());
-            long countJoinedLocations = userRepository.countJoinedLocations(u.getId());
-            return UserMapper.toUserFullResponse(u, countLikedLocations,
-                                                 countJoinedLocations);
-        });
+    public UserFullResponse findById(long id) {
+        AppUser appUser = userRepository.findById(id)
+                                        .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
+                                                                                        "USER_NOT_FOUND",
+                                                                                        ErrorCode.USER_NOT_FOUND));
+
+        long countLikedLocations = userRepository.countLikedLocations(appUser.getId());
+        long countJoinedLocations = userRepository.countJoinedLocations(appUser.getId());
+        return UserMapper.toUserFullResponse(appUser, countLikedLocations, countJoinedLocations);
+    }
+
+    public UserFullResponse findByUsername(String username) {
+        AppUser appUser = userRepository.findByUsername(username)
+                                        .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
+                                                                                        "USER_NOT_FOUND",
+                                                                                        ErrorCode.USER_NOT_FOUND));
+
+        long countLikedLocations = userRepository.countLikedLocations(appUser.getId());
+        long countJoinedLocations = userRepository.countJoinedLocations(appUser.getId());
+        return UserMapper.toUserFullResponse(appUser, countLikedLocations, countJoinedLocations);
     }
 
     public MyUserFullResponse getMyProfile(Long userId) {
         AppUser appUser = userRepository.findByIdFull(userId)
                                         .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
-                                                                                        "USER_NOT_FOUND"));
+                                                                                        "USER_NOT_FOUND",
+                                                                                        ErrorCode.USER_NOT_FOUND));
         return evaluateMyUserFullResponse(appUser);
     }
 
@@ -59,7 +72,8 @@ public class UserService {
     public MyUserFullResponse updateMyProfile(Long userId, UpdateMyProfileRequest request) {
         AppUser user = userRepository.findByIdFull(userId)
                                      .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
-                                                                                     "USER_NOT_FOUND"));
+                                                                                     "USER_NOT_FOUND",
+                                                                                     ErrorCode.USER_NOT_FOUND));
         user.setFirstName(safeTrim(request.getFirstName()));
         user.setLastName(safeTrim(request.getLastName()));
         user.setAboutMe(safeTrim(request.getAboutMe()));

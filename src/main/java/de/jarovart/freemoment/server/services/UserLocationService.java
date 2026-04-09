@@ -3,6 +3,7 @@ package de.jarovart.freemoment.server.services;
 
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.enums.LocationType;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.repository.UserRepository;
@@ -26,11 +27,11 @@ public class UserLocationService {
                                                        String requesterUsername) {
         AppUser targetUser = userRepository.findById(targetUserId)
                                            .orElseThrow(() -> new ServiceResponseException(
-                                                   HttpStatus.NOT_FOUND, "USER_NOT_FOUND"));
+                                                   HttpStatus.NOT_FOUND, "USER_NOT_FOUND", ErrorCode.USER_NOT_FOUND));
 
-        if (requesterUsername == null || requesterUsername.isBlank()) {
+        /*if (requesterUsername == null || requesterUsername.isBlank()) {
             throw new ServiceResponseException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
-        }
+        }*/
         boolean isOwnProfile = targetUser.getUsername().equals(requesterUsername);
         return getLocationsFromUser(targetUserId, locationType, isOwnProfile);
     }
@@ -38,7 +39,7 @@ public class UserLocationService {
     public List<LocationResponse> getMyLocations(LocationType locationType, String username) {
         AppUser me = userRepository.findByUsername(username)
                                    .orElseThrow(() -> new ServiceResponseException(
-                                           HttpStatus.NOT_FOUND, "USER_NOT_FOUND"));
+                                           HttpStatus.NOT_FOUND, "USER_NOT_FOUND", ErrorCode.USER_NOT_FOUND));
 
         return getLocationsFromUser(me.getId(), locationType, true);
     }
@@ -46,7 +47,8 @@ public class UserLocationService {
     private List<LocationResponse> getLocationsFromUser(Long targetUserId, LocationType locationType,
                                                         boolean isOwnProfile) {
         if (!isOwnProfile && locationType == LocationType.LIKED) {
-            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "LIKED_LOCATIONS_NOT_PUBLIC");
+            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "LIKED_LOCATIONS_NOT_PUBLIC",
+                                               ErrorCode.LIKED_LOCATIONS_NOT_PUBLIC);
         }
 
         return switch (locationType) {

@@ -55,24 +55,29 @@ public class UserController {
 
     @GetMapping("/findById")
     public ResponseEntity<UserFullResponse> findById(@RequestParam long id) {
-        log.info("GET /api/users/id={}", id);
-        return userService.findById(id)
-                          .map(ResponseEntity::ok)
-                          .orElse(ResponseEntity.notFound()
-                                                .build());
+        log.info("GET /api/users/findById={}", id);
+        return ResponseEntity.ok(userService.findById(id));
+    }
+
+    @GetMapping("/findByUsername")
+    public ResponseEntity<UserFullResponse> findByUsername(@RequestParam String username) {
+        log.info("GET /api/users/findByUsername={}", username);
+        return ResponseEntity.ok(userService.findByUsername(username));
     }
 
     @GetMapping("/{id}/locations/{locationType}")
-    public ResponseEntity<List<LocationResponse>> getLocationsByUserId(@PathVariable Long id,
-                                                                       @PathVariable("locationType") String locationTypeString,
-                                                                       Authentication authentication) {
-        log.info("GET /api/users/{}/locations/{} by user {}", id, locationTypeString, authentication.getName());
+    public ResponseEntity<List<LocationResponse>> getLocationsCreatedByUserId(@PathVariable Long id,
+                                                                              @PathVariable("locationType") String locationTypeString,
+                                                                              Authentication authentication) {
+        String username = (authentication != null) ? authentication.getName() : "";
+        log.info("GET /api/users/{}/locations/{} by user {}", id, locationTypeString, username);
 
         LocationType locationType = LocationType.from(locationTypeString);
         return ResponseEntity.ok(
-                userLocationService.getLocationsByUserId(id, locationType, authentication.getName())
+                userLocationService.getLocationsByUserId(id, locationType, username)
         );
     }
+
 
     @GetMapping("/me/locations/{locationType}")
     public ResponseEntity<List<LocationResponse>> getMyLocations(

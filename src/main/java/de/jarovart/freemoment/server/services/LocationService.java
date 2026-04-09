@@ -7,12 +7,12 @@ import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Image;
 import de.jarovart.freemoment.server.model.entities.Location;
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.repository.ImageRepository;
 import de.jarovart.freemoment.server.repository.LocationRepository;
 import de.jarovart.freemoment.server.repository.UserRepository;
 import de.jarovart.freemoment.server.util.LocationMapper;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -69,14 +69,18 @@ public class LocationService {
 
     public LocationFullResponse getLocationById(Long id, Long userId) {
         Location location = locationRepository.findByIdFull(id)
-                                              .orElseThrow(() -> new EntityNotFoundException("Location not found"));
+                                              .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
+                                                                                              "LOCATION_NOT_FOUND",
+                                                                                              ErrorCode.LOCATION_NOT_FOUND));
         return evaluateLocationFullResponse(location, userId);
     }
 
     @Transactional
     public LocationResponse createLocation(LocationCreateRequest locationCreateRequest, Long userId) {
         AppUser user = userRepository.findById(userId)
-                                     .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                                     .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
+                                                                                     "USER_NOT_FOUND",
+                                                                                     ErrorCode.USER_NOT_FOUND));
         Location location = LocationMapper.fromCreateRequest(locationCreateRequest, user);
         Location savedLocation = locationRepository.save(location);
 
@@ -145,18 +149,22 @@ public class LocationService {
                                                     Long userId) {
         Location location = locationRepository.findById(locationId)
                                               .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
-                                                                                              "LOCATION_NOT_FOUND"));
+                                                                                              "LOCATION_NOT_FOUND",
+                                                                                              ErrorCode.LOCATION_NOT_FOUND));
 
         if (!location.getCreatedUser().getId().equals(userId)) {
-            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER");
+            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER",
+                                               ErrorCode.LOCATION_FORBIDDEN);
         }
 
         Image image = imageRepository.findById(updateThumbnailRequest.getImageId())
                                      .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
-                                                                                     "IMAGE_NOT_FOUND"));
+                                                                                     "IMAGE_NOT_FOUND",
+                                                                                     ErrorCode.IMAGE_NOT_FOUND));
 
         if (image.getLocation() == null || !image.getLocation().getId().equals(locationId)) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "IMAGE_NOT_BELONG_TO_LOCATION");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "IMAGE_NOT_BELONG_TO_LOCATION",
+                                               ErrorCode.IMAGE_NOT_FOUND);
         }
         location.setThumbnailImage(image);
         Location savedLocation = locationRepository.save(location);

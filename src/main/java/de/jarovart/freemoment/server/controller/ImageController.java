@@ -83,9 +83,10 @@ public class ImageController {
 
     @DeleteMapping("/me")
     @PreAuthorize("hasRole('USER')")
-    public void deleteMyProfileImage(@AuthenticationPrincipal JarovartUserDetails user) {
+    public ResponseEntity<Void> deleteMyProfileImage(@AuthenticationPrincipal JarovartUserDetails user) {
         log.info("DELETE /api/images/me my {} profile image.", user.getUsername());
         imageService.deleteMyProfileImage(user.getId());
+        return ResponseEntity.noContent().build();
     }
 
 }

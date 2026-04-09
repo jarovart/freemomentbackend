@@ -9,6 +9,7 @@ import de.jarovart.freemoment.server.model.dtos.response.LoginResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.PasswordResetToken;
 import de.jarovart.freemoment.server.model.entities.PendingUser;
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.enums.UserRole;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
@@ -56,7 +57,8 @@ public class AuthenticationService implements UserDetailsService {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(loginRequest.username());
         if (optionalAppUser.isEmpty() || !passwordEncoder.matches(loginRequest.password(),
                                                                   optionalAppUser.get().getPassword())) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid credentials");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid credentials",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
         AppUser appUser = optionalAppUser.get();
         String token = jwtService.generateToken(appUser.getUsername(),
@@ -71,38 +73,39 @@ public class AuthenticationService implements UserDetailsService {
     @Transactional
     public void registerPendingUser(RegisterRequest registerRequest) {
         String email = registerRequest.email();
+        String username = registerRequest.username();
 
-        if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
-            throw new ServiceResponseException(HttpStatus.CONFLICT, "Username exists");
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new ServiceResponseException(HttpStatus.CONFLICT, "Username exists", ErrorCode.USER_USERNAME_EXISTS);
         }
 
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new ServiceResponseException(HttpStatus.CONFLICT, "Email exists");
+            throw new ServiceResponseException(HttpStatus.CONFLICT, "Email exists", ErrorCode.USER_EMAIL_EXISTS);
         }
 
         if (registerRequest.password() == null || registerRequest.password().isBlank()) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password is required");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password is required",
+                                               ErrorCode.USER_PASSWORD_REQUIRED);
         }
 
         if (registerRequest.password().length() < 8) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password must be at least 8 characters long");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password must be at least 8 characters long",
+                                               ErrorCode.USER_PASSWORD_TOO_SHORT);
         }
 
         if (email == null || email.isBlank() || !email.contains("@") || !email.contains(".") || email.contains(" ")) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid email");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid email", ErrorCode.USER_EMAIL_INVALID);
         }
 
-        Optional<PendingUser> optionalPendingUser = pendingUserRepository.findByEmail(email);
-        PendingUser pu;
-        if (optionalPendingUser.isPresent()) {
-            pu = optionalPendingUser.get();
+        PendingUser pu = pendingUserRepository.findByEmail(email)
+                                              .or(() -> pendingUserRepository.findByUsername(username))
+                                              .orElseGet(PendingUser::new);
+        if (pu.getLastMailSentAt() != null) {
             Util_General.verifyLastMailSentAtSeconds(pu.getLastMailSentAt());
-        } else {
-            pu = new PendingUser();
         }
 
         String token = UUID.randomUUID().toString();
-        pu.setUsername(registerRequest.username());
+        pu.setUsername(username);
         pu.setFirstName(registerRequest.firstname());
         pu.setLastName(registerRequest.lastname());
         pu.setEmail(email);
@@ -118,15 +121,16 @@ public class AuthenticationService implements UserDetailsService {
     public void transferPendingUserToAppUser(VerifyTokenRequest verifyTokenRequest) {
         String token = verifyTokenRequest.token();
         if (token == null || token.isBlank()) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Missing token");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Missing token", ErrorCode.TOKEN_MISSING);
         }
 
         PendingUser pu = pendingUserRepository
                 .findByVerifyToken(token)
-                .orElseThrow(() -> new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid token"));
+                .orElseThrow(() -> new ServiceResponseException(HttpStatus.BAD_REQUEST, "Invalid token",
+                                                                ErrorCode.TOKEN_INVALID));
 
         if (pu.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ServiceResponseException(HttpStatus.GONE, "Token expired");
+            throw new ServiceResponseException(HttpStatus.GONE, "Token expired", ErrorCode.TOKEN_EXPIRED);
         }
 
         AppUser user = new AppUser();
@@ -146,7 +150,8 @@ public class AuthenticationService implements UserDetailsService {
     public void updateTokenOfPendingUserAndResendEmail(SendEmailRequest sendEmailRequest) {
         String email = sendEmailRequest.email();
         if (email == null || email.isBlank()) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Email is required");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Email is required",
+                                               ErrorCode.USER_EMAIL_REQUIRED);
         }
 
         Optional<PendingUser> optionalPendingUser = pendingUserRepository.findByEmail(email);
@@ -172,7 +177,8 @@ public class AuthenticationService implements UserDetailsService {
         String email = sendEmailRequest.email();
         if (email == null || email.isBlank() || !email.contains("@") || !email.contains(".")
                 || email.trim().contains(" ")) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Valid Email is required");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Valid Email is required",
+                                               ErrorCode.USER_EMAIL_INVALID);
         }
 
         // Immer 200, auch wenn email nicht existiert (anti enumeration)
@@ -202,23 +208,27 @@ public class AuthenticationService implements UserDetailsService {
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         PasswordResetToken passwordResetToken = passwordResetTokenRepository
                 .findByToken(resetPasswordRequest.token())
-                .orElseThrow(() -> new ServiceResponseException(HttpStatus.BAD_REQUEST, "Link is not valid"));
+                .orElseThrow(() -> new ServiceResponseException(HttpStatus.BAD_REQUEST, "Link is not valid",
+                                                                ErrorCode.LINK_NOT_VALID));
 
         if (passwordResetToken.getUsedAt() != null) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Link has already been used");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Link has already been used",
+                                               ErrorCode.LINK_USED);
         }
         if (passwordResetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new ServiceResponseException(HttpStatus.GONE, "Link has expired");
+            throw new ServiceResponseException(HttpStatus.GONE, "Link has expired", ErrorCode.LINK_EXPIRED);
         }
 
         String newPassword = resetPasswordRequest.newPassword();
         if (newPassword == null || newPassword.isBlank() || newPassword.length() < 8) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password must be at least 8 characters long");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Password must be at least 8 characters long",
+                                               ErrorCode.USER_PASSWORD_TOO_SHORT);
         }
 
         AppUser user = userRepository
                 .findByEmail(passwordResetToken.getEmail())
-                .orElseThrow(() -> new ServiceResponseException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found"));
+                .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
+                                                                ErrorCode.USER_NOT_FOUND));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -226,26 +236,12 @@ public class AuthenticationService implements UserDetailsService {
         passwordResetTokenRepository.save(passwordResetToken);
     }
 
-
-    public UserDetails loadUserById(String id) throws UsernameNotFoundException {
-        AppUser user = userRepository.findByUsername(id)
-                                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return new JarovartUserDetails(
-                user.getId(),
-                user.getUsername(),
-                user.getPassword(),
-                user.getRoles()
-                    .stream()
-                    .map(UserRole::getRoleName)
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toSet())
-        );
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser user = userRepository.findByUsername(username)
-                                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                                     .orElseThrow(
+                                             () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
+                                                                                ErrorCode.USER_NOT_FOUND));
         return new JarovartUserDetails(
                 user.getId(),
                 user.getUsername(),

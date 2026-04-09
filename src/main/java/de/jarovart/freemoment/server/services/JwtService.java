@@ -22,31 +22,31 @@ import java.util.Map;
  */
 @Service
 public class JwtService {
-   
-  private final Key key = Keys.hmacShaKeyFor("change_this_to_a_long_random_secret_key_please!".getBytes());
-  private final long validityMs = 1000L * 60 * 60 * 24; // 24h
 
-  public String generateToken(String username, Map<String, Object> extraClaims) {
-    Date now = new Date();
-    return Jwts.builder()
-        .setClaims(extraClaims)
-        .setSubject(username)
-        .setIssuedAt(now)
-        .setExpiration(new Date(now.getTime() + validityMs))
-        .signWith(key, SignatureAlgorithm.HS256)
-        .compact();
-  }
+    private static final long VALIDITY_MS = 1000L * 60 * 60 * 24; // 24h
+    private final Key key = Keys.hmacShaKeyFor("change_this_to_a_long_random_secret_key_please!".getBytes());
 
-  public Jws<Claims> parseToken(String token) {
-    return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-  }
-
-  public boolean isTokenValid(String token, String username) {
-    try {
-      String sub = parseToken(token).getBody().getSubject();
-      return sub.equals(username) && parseToken(token).getBody().getExpiration().after(new Date());
-    } catch (JwtException | IllegalArgumentException e) {
-      return false;
+    public String generateToken(String username, Map<String, Object> extraClaims) {
+        Date now = new Date();
+        return Jwts.builder()
+                   .setClaims(extraClaims)
+                   .setSubject(username)
+                   .setIssuedAt(now)
+                   .setExpiration(new Date(now.getTime() + VALIDITY_MS))
+                   .signWith(key, SignatureAlgorithm.HS256)
+                   .compact();
     }
-  }
+
+    public Jws<Claims> parseToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+    }
+
+    public boolean isTokenValid(String token, String username) {
+        try {
+            String sub = parseToken(token).getBody().getSubject();
+            return sub.equals(username) && parseToken(token).getBody().getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
 }

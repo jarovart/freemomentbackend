@@ -1,0 +1,30 @@
+package de.jarovart.freemoment.server.model.enums;
+
+public enum ErrorCode {
+    IMAGE_NOT_FOUND,
+    INVALID_CREDENTIALS,
+    LINK_NOT_VALID,
+    LINK_USED,
+    LINK_EXPIRED,
+    LOCATION_NOT_FOUND,
+    LOCATION_FORBIDDEN,
+    TOKEN_EXPIRED,
+    TOKEN_INVALID,
+    TOKEN_MISSING,
+    USER_NOT_FOUND,
+    USER_EMAIL_EXISTS,
+    USER_EMAIL_INVALID,
+    USER_EMAIL_REQUIRED,
+    USER_PASSWORD_REQUIRED,
+    USER_PASSWORD_TOO_SHORT,
+    USER_USERNAME_EXISTS,
+    NOT_AUTHENTICATED,
+    PROFILE_UPDATE_FAILED,
+    PROFILE_IMAGE_TOO_LARGE,
+    PROFILE_IMAGE_INVALID_TYPE,
+    LIKED_LOCATIONS_NOT_PUBLIC;
+
+    public static LocationType from(String value) {
+        return LocationType.valueOf(value.toUpperCase());
+    }
+}

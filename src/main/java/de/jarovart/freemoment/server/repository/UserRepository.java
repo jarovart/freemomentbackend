@@ -19,6 +19,11 @@ import java.util.Optional;
  */
 public interface UserRepository extends JpaRepository<AppUser, Long> {
 
+    @Query("""
+                select u from AppUser u
+                left join fetch u.profileImage
+                where u.username = :username
+            """)
     public Optional<AppUser> findByUsername(String username);
 
     public Optional<AppUser> findByEmail(String email);

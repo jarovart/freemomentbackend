@@ -1,6 +1,8 @@
 package de.jarovart.freemoment.server.services;
 
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.SendingEmailException;
+import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -37,7 +39,8 @@ public class MailService {
         try {
             mailSender.send(message);
         } catch (MailException e) {
-            throw new SendingEmailException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            throw new ServiceResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
+                                               ErrorCode.USER_EMAIL_INVALID);
         }
     }
 
