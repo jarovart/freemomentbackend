@@ -131,6 +131,19 @@ public class LocationController {
                                                                  startDateTime, endDateTime, userId);
     }
 
+    @GetMapping("/users/{userId}/created-locations")
+    public ResponseEntity<Slice<LocationResponse>> getCreatedLocationsByUserIdPaged(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        log.info("GET getCreatedLocationsByUserIdPaged /users/{}/created-locations page={} size={}", userId, page,
+                 size);
+        return ResponseEntity.ok(
+                locationService.getCreatedLocationsByUserIdPaged(userId, page, size)
+        );
+    }
+
 
     /**
      * Creates a Location Entity and returns a LocationResponse (Base), which will be used for location map.

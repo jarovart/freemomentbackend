@@ -134,6 +134,15 @@ public class LocationService {
         return new SliceImpl<>(filtered, PageRequest.of(page, size), hasNext);
     }
 
+
+    public Slice<LocationResponse> getCreatedLocationsByUserIdPaged(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "creationDateTime"));
+
+        return locationRepository
+                .findByCreatedUser_IdOrderByCreationDateTimeDesc(userId, pageable)
+                .map(loc -> evaluateLocationResponse(loc, userId));
+    }
+
     private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371.0088;
         double dLat = Math.toRadians(lat2 - lat1);

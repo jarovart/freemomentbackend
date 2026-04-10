@@ -7,6 +7,7 @@ package de.jarovart.freemoment.server.repository;
 import de.jarovart.freemoment.server.model.entities.Location;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -174,4 +175,9 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     boolean existsByIdAndLikedUsers_Id(Long locationId, Long userId);
 
     boolean existsByIdAndJoinedUsers_Id(Long locationId, Long userId);
+
+    Slice<Location> findByCreatedUser_IdOrderByCreationDateTimeDesc(
+            Long userId,
+            Pageable pageable
+    );
 }
