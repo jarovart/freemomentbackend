@@ -62,19 +62,22 @@ public class SecurityConfiguration {
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
-                                            "/api/locations/withinWithTime**",
-                                            "/api/users/findByUsername*",
-                                            "/api/users/*/locations/created",
-                                            "/api/users/*/locations/joined"
+                                            "/api/locations/withinWithTime**"
                            ).permitAll()
                            .requestMatchers(HttpMethod.OPTIONS,
                                             "/api/auth/**",
                                             "/api/users/me").permitAll()
                            .requestMatchers(HttpMethod.GET,
                                             "/api/users/all",
+                                            "/api/users/findByUsername*",
+                                            "/api/users/*/locations/created",
+                                            "/api/users/*/locations/joined",
                                             "/api/users/query",
                                             "/api/users/id",
                                             "/api/users/me",
+                                            "/api/users/*/created",
+                                            "/api/users/*/liked",
+                                            "/api/users/*/joined",
                                             "/api/locations/*/like",
                                             "/api/locations/*/join").authenticated()
                            .requestMatchers(HttpMethod.DELETE,

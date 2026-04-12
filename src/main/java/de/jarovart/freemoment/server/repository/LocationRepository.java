@@ -22,17 +22,8 @@ import java.util.Optional;
  */
 public interface LocationRepository extends JpaRepository<Location, Long> {
 
-    public List<Location> findByLatitudeBetweenAndLongitudeBetween(double minLat, double maxLat, double minLng,
-                                                                   double maxLng, Pageable pageable);
-
-    @Query("""
-            SELECT l FROM Location l
-            left join fetch l.thumbnailImage
-            WHERE l.latitude
-            BETWEEN :minLat AND :maxLat AND l.longitude
-            BETWEEN :minLng AND :maxLng""")
-    public List<Location> findWithinBounds(@Param("minLat") double minLat, @Param("maxLat") double maxLat,
-                                           @Param("minLng") double minLng, @Param("maxLng") double maxLng);
+    List<Location> findByLatitudeBetweenAndLongitudeBetween(double minLat, double maxLat, double minLng,
+                                                            double maxLng, Pageable pageable);
 
     Page<Location> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description,
                                                                                     Pageable pageable);
@@ -54,17 +45,6 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     @Query("""
                 select l from Location l
                 left join fetch l.createdUser
-                left join fetch l.joinedUsers
-                left join fetch l.likedUsers
-                left join fetch l.images
-                left join fetch l.thumbnailImage
-                where l.id = :id
-            """)
-    Optional<Location> findByIdWithUsers(@Param("id") Long id);
-
-    @Query("""
-                select l from Location l
-                left join fetch l.createdUser
                 left join fetch l.images
                 left join fetch l.thumbnailImage
                 where l.id = :id
@@ -76,9 +56,52 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
                 left join fetch l.thumbnailImage
                 left join fetch l.images
                 left join fetch l.createdUser
+                left join fetch l.likes
+                left join fetch l.joins
                 where l.id = :id
             """)
-    Optional<Location> findByIdFull(@Param("id") Long id);
+    Optional<Location> findByIdFull(@Param("id") Long locationId);
+
+
+    List<Location> findByCreatedUser_Id(Long userId);
+
+    Slice<Location> findByCreatedUser_IdOrderByCreationDateTimeDesc(
+            Long userId,
+            Pageable pageable
+    );
+
+    /***************************************************************************************************
+     *
+     * Outdated methods.
+     *
+     ***************************************************************************************************/
+
+    @Query("""
+                select l from Location l
+                left join fetch l.createdUser
+                left join fetch l.joins
+                left join fetch l.likes
+                left join fetch l.images
+                left join fetch l.thumbnailImage
+                where l.id = :id
+            """)
+    Optional<Location> findByIdWithUsers(@Param("id") Long id);
+
+    Page<Location> findByStartDateTimeGreaterThanEqualAndEndDateTimeLessThanEqualAndLatitudeBetweenAndLongitudeBetween(
+            LocalDateTime start, LocalDateTime end,
+            double minLat, double maxLat,
+            double minLng, double maxLng,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT l FROM Location l
+            left join fetch l.thumbnailImage
+            WHERE l.latitude
+            BETWEEN :minLat AND :maxLat AND l.longitude
+            BETWEEN :minLng AND :maxLng""")
+    List<Location> findWithinBounds(@Param("minLat") double minLat, @Param("maxLat") double maxLat,
+                                    @Param("minLng") double minLng, @Param("maxLng") double maxLng);
 
     @Query("""
             select l from Location l
@@ -97,13 +120,6 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             @Param("minLng") double minLng,
             @Param("maxLng") double maxLng,
             @Param("q") String q,
-            Pageable pageable
-    );
-
-    Page<Location> findByStartDateTimeGreaterThanEqualAndEndDateTimeLessThanEqualAndLatitudeBetweenAndLongitudeBetween(
-            LocalDateTime start, LocalDateTime end,
-            double minLat, double maxLat,
-            double minLng, double maxLng,
             Pageable pageable
     );
 
@@ -137,47 +153,4 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             @Param("minLng") double minLng,
             @Param("maxLng") double maxLng,
             @Param("q") String q, Pageable pageable);
-
-    List<Location> findByCreatedUser_Id(Long userId);
-
-    @Query("""
-                select l
-                from Location l
-                join l.joinedUsers u
-                where u.id = :userId
-            """)
-    List<Location> findJoinedLocationsByUserId(Long userId);
-
-    @Query("""
-                select l
-                from Location l
-                join l.likedUsers u
-                where u.id = :userId
-            """)
-    List<Location> findLikedLocationsByUserId(Long userId);
-
-    @Query("""
-                select count(u)
-                from Location l
-                join l.joinedUsers u
-                where l.id = :locationId
-            """)
-    long countJoinedUsersByLocationId(@Param("locationId") Long locationId);
-
-    @Query("""
-                select count(u)
-                from Location l
-                join l.likedUsers u
-                where l.id = :locationId
-            """)
-    long countLikedUsersByLocationId(@Param("locationId") Long locationId);
-
-    boolean existsByIdAndLikedUsers_Id(Long locationId, Long userId);
-
-    boolean existsByIdAndJoinedUsers_Id(Long locationId, Long userId);
-
-    Slice<Location> findByCreatedUser_IdOrderByCreationDateTimeDesc(
-            Long userId,
-            Pageable pageable
-    );
 }

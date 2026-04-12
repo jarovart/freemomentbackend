@@ -7,6 +7,7 @@ package de.jarovart.freemoment.server.model.entities;
 import de.jarovart.freemoment.server.model.enums.UserRole;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -19,7 +20,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
@@ -82,10 +82,11 @@ public class AppUser {
     private List<Image> uploadedImages = new ArrayList<>();
     @OneToMany(mappedBy = "createdUser", fetch = FetchType.LAZY)
     private List<Location> createdLocations = new ArrayList<>();
-    @ManyToMany(mappedBy = "likedUsers", fetch = FetchType.LAZY)
-    private Set<Location> likedLocations = new HashSet<>();
-    @ManyToMany(mappedBy = "joinedUsers", fetch = FetchType.LAZY)
-    private Set<Location> joinedLocations = new HashSet<>();
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LocationLike> likedLocations = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LocationJoin> joinedLocations = new HashSet<>();
 
     public AppUser() {
     }

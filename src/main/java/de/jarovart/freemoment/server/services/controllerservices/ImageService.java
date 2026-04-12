@@ -7,8 +7,7 @@ import de.jarovart.freemoment.server.model.entities.Location;
 import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.repository.ImageRepository;
-import de.jarovart.freemoment.server.repository.LocationRepository;
-import de.jarovart.freemoment.server.repository.UserRepository;
+import de.jarovart.freemoment.server.services.LocationImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,34 +32,31 @@ public class ImageService {
     @Autowired
     private ImageRepository imageRepository;
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     @Autowired
-    private LocationRepository locationRepository;
+    private LocationImageService locationImageService;
+
+    public Image getImage(Long imageId) {
+        return imageRepository.findById(imageId).orElseThrow(
+                () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "IMAGE_NOT_FOUND",
+                                                   ErrorCode.IMAGE_NOT_FOUND));
+    }
 
     @Transactional
     public List<ImageResponse> storeImages(List<MultipartFile> files, Long userId) {
-        AppUser user = userRepository.findById(userId)
-                                     .orElseThrow(
-                                             () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
-                                                                                ErrorCode.USER_NOT_FOUND));
+        AppUser user = userService.getUserReference(userId);
         List<Image> images = storeUploadedImages(files, user, null);
         return createImageResponses(images);
     }
 
     @Transactional
     public List<ImageResponse> storeImages(List<MultipartFile> files, Long userId, Long locationId) {
-        Location location = locationRepository.findByIdWithCreatedUserAndImages(locationId)
-                                              .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
-                                                                                              "Location not found",
-                                                                                              ErrorCode.LOCATION_NOT_FOUND));
+        Location location = locationImageService.getLocationWithCreatedUserAndImages(locationId);
 
         if (!location.getCreatedUser().getId().equals(userId)) {
             throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER", ErrorCode.IMAGE_NOT_FOUND);
         }
-        AppUser user = userRepository.findById(userId)
-                                     .orElseThrow(
-                                             () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
-                                                                                ErrorCode.USER_NOT_FOUND));
+        AppUser user = userService.getUser(userId);
 
         List<Image> images = storeUploadedImages(files, user, location);
         location.getImages().addAll(images);
@@ -69,14 +65,11 @@ public class ImageService {
 
     @Transactional
     public ImageResponse uploadMyProfileImage(MultipartFile file, Long userId) {
-        AppUser user = userRepository.findByIdFull(userId)
-                                     .orElseThrow(
-                                             () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
-                                                                                ErrorCode.USER_NOT_FOUND));
+        AppUser user = userService.getUserFull(userId);
         Image oldImage = user.getProfileImage();
         Image newImage = storeUploadedImage(file, user);
         user.setProfileImage(newImage);
-        userRepository.save(user);
+        userService.save(user);
         if (oldImage != null) {
             imageRepository.delete(oldImage);
             deleteImage(oldImage.getFilename());
@@ -86,10 +79,7 @@ public class ImageService {
 
     @Transactional
     public void deleteMyProfileImage(Long userId) {
-        AppUser user = userRepository.findByIdFull(userId)
-                                     .orElseThrow(
-                                             () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "User not found",
-                                                                                ErrorCode.USER_NOT_FOUND));
+        AppUser user = userService.getUserFull(userId);
         Image image = user.getProfileImage();
         if (image == null) {
             return;
@@ -102,10 +92,9 @@ public class ImageService {
 
     @Transactional
     public void delete(Long imageId) {
-        Image image = imageRepository.findById(imageId)
-                                     .orElseThrow(() -> new ServiceResponseException(HttpStatus.FORBIDDEN,
-                                                                                     "NOT_LOCATION_OWNER",
-                                                                                     ErrorCode.IMAGE_NOT_FOUND));
+        Image image = imageRepository.findById(imageId).orElseThrow(
+                () -> new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER",
+                                                   ErrorCode.IMAGE_NOT_FOUND));
         imageRepository.delete(image);
         deleteImage(image.getFilename());
     }

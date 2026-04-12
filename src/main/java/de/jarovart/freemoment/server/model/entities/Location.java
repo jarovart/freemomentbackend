@@ -15,8 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
@@ -60,16 +58,11 @@ public class Location {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_user_id")
     private AppUser createdUser;
-    @ManyToMany
-    @JoinTable(name = "location_liked_by_users",
-            joinColumns = @JoinColumn(name = "location_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<AppUser> likedUsers = new HashSet<>();
-    @ManyToMany
-    @JoinTable(name = "location_joined_users",
-            joinColumns = @JoinColumn(name = "location_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<AppUser> joinedUsers = new HashSet<>();
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LocationLike> likes = new HashSet<>();
+
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LocationJoin> joins = new HashSet<>();
 
     // Location thumbnail image display settings
     @Embedded
@@ -96,7 +89,7 @@ public class Location {
         this.latitude = latitude;
         this.longitude = longitude;
         this.createdUser = createdUser;
-        this.likedUsers = new HashSet<>();
-        this.joinedUsers = new HashSet<>();
+        this.likes = new HashSet<>();
+        this.joins = new HashSet<>();
     }
 }

@@ -5,16 +5,16 @@ import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.dtos.response.MyUserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.UserResponse;
-import de.jarovart.freemoment.server.model.enums.LocationType;
 import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
-import de.jarovart.freemoment.server.services.UserLocationService;
-import de.jarovart.freemoment.server.services.UserService;
+import de.jarovart.freemoment.server.services.controllerservices.LocationService;
+import de.jarovart.freemoment.server.services.controllerservices.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,57 +37,38 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
     @Autowired
-    private UserLocationService userLocationService;
+    private LocationService locationService;
+
 
     @GetMapping("/all")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Slice<UserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         log.info("GET /api/users/all");
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers(page, size));
     }
 
     @GetMapping("/query")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserResponse>> byQuery(@RequestParam String query) {
         log.info("GET /api/users/query={}", query);
         return ResponseEntity.ok(userService.searchByQuery(query));
     }
 
     @GetMapping("/findById")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserFullResponse> findById(@RequestParam long id) {
         log.info("GET /api/users/findById={}", id);
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @GetMapping("/findByUsername")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserFullResponse> findByUsername(@RequestParam String username) {
         log.info("GET /api/users/findByUsername={}", username);
         return ResponseEntity.ok(userService.findByUsername(username));
-    }
-
-    @GetMapping("/{id}/locations/{locationType}")
-    public ResponseEntity<List<LocationResponse>> getLocationsCreatedByUserId(@PathVariable Long id,
-                                                                              @PathVariable("locationType") String locationTypeString,
-                                                                              Authentication authentication) {
-        String username = (authentication != null) ? authentication.getName() : "";
-        log.info("GET /api/users/{}/locations/{} by user {}", id, locationTypeString, username);
-
-        LocationType locationType = LocationType.from(locationTypeString);
-        return ResponseEntity.ok(
-                userLocationService.getLocationsByUserId(id, locationType, username)
-        );
-    }
-
-
-    @GetMapping("/me/locations/{locationType}")
-    public ResponseEntity<List<LocationResponse>> getMyLocations(
-            @PathVariable("locationType") String locationTypeString,
-            Authentication authentication) {
-        log.info("GET /api/users/me/locations/{} by me {}", locationTypeString, authentication.getName());
-
-        LocationType locationType = LocationType.from(locationTypeString);
-        return ResponseEntity.ok(userLocationService.getMyLocations(locationType, authentication.getName())
-        );
     }
 
     @GetMapping("/me")
@@ -102,5 +83,45 @@ public class UserController {
     ) {
         log.info("Patch /api/users/me={}", userDetails.getUsername());
         return ResponseEntity.ok(userService.updateMyProfile(userDetails.getId(), request));
+    }
+
+    @GetMapping("{userId}/locations/created")
+    public ResponseEntity<Slice<LocationResponse>> getCreatedLocationsByUserIdPaged(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @AuthenticationPrincipal JarovartUserDetails userDetails
+    ) {
+        log.info("GET getCreatedLocationsByUserIdPaged /api/users/{}/locations/created page={} size={}", userId, page,
+                 pageSize);
+        return ResponseEntity.ok(locationService.getCreatedLocationsByUserIdPaged(userId, page, pageSize)
+        );
+    }
+
+    @GetMapping("{userId}/locations/liked")
+    public ResponseEntity<Slice<LocationResponse>> getLikedLocationsByUserIdPaged(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @AuthenticationPrincipal JarovartUserDetails userDetails
+    ) {
+        log.info("GET getLikedLocationsByUserIdPaged /api/users/{}/location/liked page={} size={}", userId, page,
+                 pageSize);
+        return ResponseEntity.ok(
+                userService.getLikedLocationsByUserId(userId, page, pageSize)
+        );
+    }
+
+    @GetMapping("{userId}/locations/joined")
+    public ResponseEntity<Slice<LocationResponse>> getJoinedLocationsByUserIdPaged(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal JarovartUserDetails userDetails
+    ) {
+        log.info("GET getJoinedLocationsByUserIdPaged /api/users/{}/locations/joined page={} size={}", userId, page,
+                 size);
+        return ResponseEntity.ok(userService.getJoinedLocationsByUserId(userId, page, size)
+        );
     }
 }

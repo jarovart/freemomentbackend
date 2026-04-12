@@ -49,6 +49,10 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
     @Query("""
                 select u from AppUser u
                 left join fetch u.profileImage
+                left join fetch u.profileImageTransform
+                left join fetch u.uploadedImages
+                left join fetch u.likedLocations
+                left join fetch u.joinedLocations
                 where u.id = :id
             """)
     Optional<AppUser> findByIdFull(@Param("id") Long id);
