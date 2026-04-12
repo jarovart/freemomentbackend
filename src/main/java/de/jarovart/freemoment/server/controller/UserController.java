@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*") // wichtig für Flutter
@@ -42,19 +40,23 @@ public class UserController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int pageSize,
+            @AuthenticationPrincipal JarovartUserDetails userDetails) {
         log.info("GET /api/users/all");
-        return ResponseEntity.ok(userService.getAllUsers(page, size));
+        return ResponseEntity.ok(userService.getAllUsers(page, pageSize));
     }
 
     @GetMapping("/query")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<UserResponse>> byQuery(@RequestParam String query) {
+    public ResponseEntity<Slice<UserResponse>> byQuery(@RequestParam String query,
+                                                       @RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int pageSize,
+                                                       @AuthenticationPrincipal JarovartUserDetails userDetails) {
         log.info("GET /api/users/query={}", query);
-        return ResponseEntity.ok(userService.searchByQuery(query));
+        return ResponseEntity.ok(userService.searchByQuery(query, page, pageSize));
     }
 
     @GetMapping("/findById")

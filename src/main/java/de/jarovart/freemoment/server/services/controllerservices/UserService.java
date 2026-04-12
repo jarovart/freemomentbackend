@@ -22,8 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @Transactional(readOnly = true)
 public class UserService {
@@ -61,8 +59,8 @@ public class UserService {
                                                    ErrorCode.USER_NOT_FOUND));
     }
 
-    public Slice<UserResponse> getAllUsers(int page, int size) {
-        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public Slice<UserResponse> getAllUsers(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
         return userRepository.findAll(pageable).map(UserMapper::toUserResponse);
     }
 
@@ -87,11 +85,13 @@ public class UserService {
      */
 
 
-    public List<UserResponse> searchByQuery(String query) {
+    public Slice<UserResponse> searchByQuery(String query, int page, int pageSize) {
         if (query == null || query.trim().length() < 3) {
-            return getAllUsers(0, 10).getContent();
+            return getAllUsers(page, pageSize);
         }
-        return UserMapper.toUserResponse(userRepository.searchUsers(query, PageRequest.of(0, 20)).getContent());
+        String cleanedQuery = query.trim().toLowerCase();
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return userRepository.searchUsers(cleanedQuery, pageable).map(UserMapper::toUserResponse);
     }
 
     public UserFullResponse findById(long id) {
