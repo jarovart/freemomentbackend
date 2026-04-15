@@ -59,6 +59,7 @@ public class SecurityConfiguration {
                            .requestMatchers(HttpMethod.GET,
                                             "/api/images/**",
                                             "/api/locations/**",
+                                            "/api/locations/findByFilter",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",

@@ -43,7 +43,7 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "20") int pageSize,
             @AuthenticationPrincipal JarovartUserDetails userDetails) {
         log.info("GET /api/users/all");
         return ResponseEntity.ok(userService.getAllUsers(page, pageSize));
@@ -53,7 +53,7 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<UserResponse>> byQuery(@RequestParam String query,
                                                        @RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "10") int pageSize,
+                                                       @RequestParam(defaultValue = "20") int pageSize,
                                                        @AuthenticationPrincipal JarovartUserDetails userDetails) {
         log.info("GET /api/users/query={}", query);
         return ResponseEntity.ok(userService.searchByQuery(query, page, pageSize));

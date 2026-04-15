@@ -190,22 +190,22 @@ public class LocationController {
                                                 .toList());
     }
 
-    @GetMapping("/sliceFilterSettings")
+    @GetMapping("/findByFilter")
     public Slice<LocationResponse> getSliceLocationsByFilterSettings(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,
             @RequestParam double lat,
             @RequestParam double lng,
             @RequestParam double radiusKm,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal JarovartUserDetails user) {
         log.info("GET /sliceFilterSettings bounds query={} with page=[{},{}] Position: [lat={} lng={} radius={}]"
-                         + " startTime: {}, endTime={}", query, page, size, lat, lng, radiusKm, startDateTime,
-                 endDateTime);
+                         + " startTime: {}, endTime={}", query, page, size, lat, lng, radiusKm, rangeStart,
+                 rangeEnd);
         Long userId = user != null ? user.getId() : null;
         return locationService.getSliceLocationsByFilterSettings(page, size, query, lat, lng, radiusKm,
-                                                                 startDateTime, endDateTime, userId);
+                                                                 rangeStart, rangeEnd, userId);
     }
 }
