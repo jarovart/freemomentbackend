@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -199,13 +200,20 @@ public class LocationController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal JarovartUserDetails user) {
-        log.info("GET /sliceFilterSettings bounds query={} with page=[{},{}] Position: [lat={} lng={} radius={}]"
-                         + " startTime: {}, endTime={}", query, page, size, lat, lng, radiusKm, rangeStart,
-                 rangeEnd);
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal JarovartUserDetails user
+    ) {
+        log.info(
+                "GET /findByFilter query={} page={} size={} lat={} lng={} radiusKm={} rangeStart={} rangeEnd={}",
+                query, page, size, lat, lng, radiusKm, rangeStart, rangeEnd
+        );
+
         Long userId = user != null ? user.getId() : null;
-        return locationService.getSliceLocationsByFilterSettings(page, size, query, lat, lng, radiusKm,
-                                                                 rangeStart, rangeEnd, userId);
+
+        var a = locationService.getSliceLocationsByFilterSettings(page, size, query, lat, lng, radiusKm, rangeStart,
+                                                                  rangeEnd, userId);
+        System.out.println(
+                "filtersetting: " + a.stream().map(LocationResponse::getTitle).collect(Collectors.joining(", ")));
+        return a;
     }
 }

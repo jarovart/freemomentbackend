@@ -106,15 +106,20 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     @Query("""
             select l from Location l
             left join fetch l.thumbnailImage
-            where l.startDateTime >= :start and l.endDateTime <= :end
-            and l.latitude between :minLat and :maxLat
-            and l.longitude between :minLng and :maxLng
-            and (:q is null or lower(l.title) like lower(concat('%', :q, '%'))
-                          or lower(l.description) like lower(concat('%', :q, '%')))
+            where l.startDateTime <= :rangeEnd
+              and l.endDateTime >= :rangeStart
+              and l.latitude between :minLat and :maxLat
+              and l.longitude between :minLng and :maxLng
+              and (
+                    :q is null or :q = '' or
+                    lower(l.title) like lower(concat('%', :q, '%')) or
+                    lower(l.description) like lower(concat('%', :q, '%'))
+                  )
+            order by l.creationDateTime desc, l.id desc
             """)
-    Page<Location> searchH2(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
+    List<Location> searchH2Chunk(
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
             @Param("minLat") double minLat,
             @Param("maxLat") double maxLat,
             @Param("minLng") double minLng,
