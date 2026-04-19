@@ -39,7 +39,8 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"password", "createdLocations", "likedLocations", "joinedLocations", "profileImage", "uploadedImages"})
+@ToString(exclude = {"password", "createdLocations", "likedLocations", "joinedLocations", "profileImage",
+        "uploadedImages", "createdPlaces"})
 public class AppUser {
 
     @Id
@@ -87,6 +88,8 @@ public class AppUser {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LocationJoin> joinedLocations = new HashSet<>();
+    @OneToMany(mappedBy = "creatorUser", fetch = FetchType.LAZY)
+    private List<Place> createdPlaces = new ArrayList<>();
 
     public AppUser() {
     }

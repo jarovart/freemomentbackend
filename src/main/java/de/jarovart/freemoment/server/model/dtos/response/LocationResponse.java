@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Data
 public class LocationResponse {
 
-    private static int likedTest = 0;
     @NotNull
     private Long id;
     private String title;

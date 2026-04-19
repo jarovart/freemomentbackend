@@ -63,7 +63,8 @@ public class SecurityConfiguration {
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
-                                            "/api/locations/withinWithTime**"
+                                            "/api/locations/withinWithTime**",
+                                            "/api/places*"
                            ).permitAll()
                            .requestMatchers(HttpMethod.OPTIONS,
                                             "/api/auth/**",
