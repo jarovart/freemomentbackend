@@ -40,7 +40,7 @@ public class UserController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Slice<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize,
@@ -49,7 +49,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(page, pageSize));
     }
 
-    @GetMapping("/query")
+    @GetMapping("/findByQuery")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<UserResponse>> byQuery(@RequestParam String query,
                                                        @RequestParam(defaultValue = "0") int page,

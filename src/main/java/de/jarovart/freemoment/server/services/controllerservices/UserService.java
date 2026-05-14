@@ -17,10 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 @Service
 @Transactional(readOnly = true)
@@ -86,8 +89,8 @@ public class UserService {
 
 
     public Slice<UserResponse> searchByQuery(String query, int page, int pageSize) {
-        if (query == null || query.trim().length() < 3) {
-            return getAllUsers(page, pageSize);
+        if (query == null || query.isBlank() || query.length() < 3) {
+            new SliceImpl<>(Collections.emptyList());
         }
         String cleanedQuery = query.trim().toLowerCase();
         Pageable pageable = PageRequest.of(page, pageSize);

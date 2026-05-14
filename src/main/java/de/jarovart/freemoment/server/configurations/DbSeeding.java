@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +69,9 @@ public class DbSeeding {
 
             user.setProfileImage(profileImage);
             user = userRepository.save(user);
+
+            List<AppUser> userList = createSeedingUsers(100, profileImage, passwordEncoder);
+            userList = userRepository.saveAll(userList);
 
             AppUser user1 = createUser(
                     "petervart",
@@ -274,5 +278,25 @@ public class DbSeeding {
 
         locationRepository.save(location);
         return location;
+    }
+
+    private List<AppUser> createSeedingUsers(int userSize, Image profileImage, PasswordEncoder passwordEncoder) {
+        List<AppUser> userList = new ArrayList<>();
+        for (int i = 0;
+             i < userSize;
+             i++) {
+            AppUser user = createUser(
+                    "jarovart" + i,
+                    "Artem" + i,
+                    "Jarovoj" + i,
+                    "info@jarovart.de" + i,
+                    "about me? i am the randomuser" + i,
+                    "test",
+                    passwordEncoder
+            );
+            user.setProfileImage(profileImage);
+            userList.add(user);
+        }
+        return userList;
     }
 }
