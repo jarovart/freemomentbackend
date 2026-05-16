@@ -92,6 +92,7 @@ public class LocationService {
         return locationJoiningService.hasUserJoined(locationId, userId);
     }
 
+    @Transactional
     public void likeLocation(Long locationId, Long userId) {
         Location location = getLocationReference(locationId);
         AppUser user = userService.getUserReference(userId);
@@ -99,10 +100,12 @@ public class LocationService {
         locationLikerService.likeLocation(location, user);
     }
 
+    @Transactional
     public void unlikeLocation(Long locationId, Long userId) {
         locationLikerService.unlikeLocation(locationId, userId);
     }
 
+    @Transactional
     public void joinLocation(Long locationId, Long userId) {
         Location location = getLocationReference(locationId);
         AppUser user = userService.getUserReference(userId);
@@ -110,6 +113,7 @@ public class LocationService {
         locationJoiningService.joinLocation(location, user);
     }
 
+    @Transactional
     public void unjoinLocation(Long locationId, Long userId) {
         locationJoiningService.unjoinLocation(locationId, userId);
     }
