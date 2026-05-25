@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -246,101 +244,34 @@ public class LocationService {
             int page,
             int paramSize,
             String query,
-            double lat,
-            double lng,
-            double radiusKm,
+            double minLat,
+            double maxLat,
+            double minLng,
+            double maxLng,
             LocalDateTime startDateTime,
             LocalDateTime endDateTime,
             Long userId
     ) {
-        validateFilterInputs(lat, lng, radiusKm, startDateTime, endDateTime, page, paramSize);
+        validateFilterInputs(minLat, maxLat, minLng, maxLng, startDateTime, endDateTime, page, paramSize);
 
         final int size = Math.min(Math.max(paramSize, 1), 50);
         final String normalizedQuery = normalizeQuery(query);
 
-        double latDelta = radiusKm / 111.0;
-        double lngDelta = radiusKm / (111.0 * Math.max(0.01, Math.cos(Math.toRadians(lat))));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("creationDateTime"),
+                Sort.Order.desc("id")));
 
-        double minLat = lat - latDelta;
-        double maxLat = lat + latDelta;
-        double minLng = lng - lngDelta;
-        double maxLng = lng + lngDelta;
+        Slice<Location> results = locationRepository.getSliceLocationsByFilterSettings(
+                startDateTime,
+                endDateTime,
+                minLat,
+                maxLat,
+                minLng,
+                maxLng,
+                normalizedQuery,
+                pageable);
 
-        if (isInvalidBounds(minLat, maxLat, minLng, maxLng)) {
-            throw new IllegalArgumentException("Invalid geographic bounds");
-        }
-
-        int neededMatchesBeforePage = page * size;
-        int neededTotalMatches = neededMatchesBeforePage + size + 1; // +1 für hasNext
-
-        List<Location> accepted = new ArrayList<>(neededTotalMatches);
-
-        int dbPage = 0;
-        final int dbChunkSize = Math.max(size * 3, 30);
-        boolean moreRawData = true;
-
-        while (accepted.size() < neededTotalMatches && moreRawData) {
-            Pageable dbPageable = PageRequest.of(
-                    dbPage,
-                    dbChunkSize,
-                    Sort.by(
-                            Sort.Order.desc("creationDateTime"),
-                            Sort.Order.desc("id")
-                    )
-            );
-
-            List<Location> chunk = locationRepository.searchH2Chunk(
-                    startDateTime,
-                    endDateTime,
-                    minLat,
-                    maxLat,
-                    minLng,
-                    maxLng,
-                    normalizedQuery,
-                    dbPageable
-            );
-
-            if (chunk.isEmpty()) {
-                moreRawData = false;
-                break;
-            }
-
-            for (Location location : chunk) {
-                if (haversineKm(lat, lng, location.getLatitude(), location.getLongitude()) <= radiusKm) {
-                    accepted.add(location);
-                    if (accepted.size() >= neededTotalMatches) {
-                        break;
-                    }
-                }
-            }
-
-            if (chunk.size() < dbChunkSize) {
-                moreRawData = false;
-            }
-
-            dbPage++;
-        }
-
-        int fromIndex = Math.min(neededMatchesBeforePage, accepted.size());
-        int toExclusive = Math.min(fromIndex + size, accepted.size());
-
-        List<LocationResponse> content = accepted.subList(fromIndex, toExclusive)
-                                                 .stream()
-                                                 .map(loc -> locationMappingService.mapToLocationResponse(loc, userId))
-                                                 .toList();
-
-        boolean hasNext = accepted.size() > (page + 1) * size;
-
-        Pageable resultPageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(
-                        Sort.Order.desc("creationDateTime"),
-                        Sort.Order.desc("id")
-                )
-        );
-
-        return new SliceImpl<>(content, resultPageable, hasNext);
+        return results.map(loc -> locationMappingService.mapToLocationResponse(loc, userId));
     }
 
     private String normalizeQuery(String query) {
@@ -352,53 +283,43 @@ public class LocationService {
     }
 
     private void validateFilterInputs(
-            double lat,
-            double lng,
-            double radiusKm,
+            double minLat,
+            double maxLat,
+            double minLng,
+            double maxLng,
             LocalDateTime startDateTime,
             LocalDateTime endDateTime,
             int page,
             int size
     ) {
-        if (lat < -90 || lat > 90) {
-            throw new IllegalArgumentException("Latitude must be between -90 and 90");
+        if (minLat < -90 || maxLat > 90 || minLat >= maxLat) {
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Latitude must be between -90 and 90",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
-        if (lng < -180 || lng > 180) {
-            throw new IllegalArgumentException("Longitude must be between -180 and 180");
-        }
-        if (radiusKm <= 0) {
-            throw new IllegalArgumentException("radiusKm must be > 0");
+        if (minLng < -180 || maxLng > 180 || minLng >= maxLng) {
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "Longitude must be between -180 and 180",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
         if (startDateTime == null || endDateTime == null) {
-            throw new IllegalArgumentException("rangeStart and rangeEnd are required");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "rangeStart and rangeEnd are required",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
         if (endDateTime.isBefore(startDateTime)) {
-            throw new IllegalArgumentException("rangeEnd must not be before rangeStart");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "rangeEnd must not be before rangeStart",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
         if (page < 0) {
-            throw new IllegalArgumentException("page must be >= 0");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "page must be >= 0",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
         if (size <= 0) {
-            throw new IllegalArgumentException("size must be > 0");
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "size must be > 0",
+                                               ErrorCode.INVALID_CREDENTIALS);
         }
     }
 
     private boolean isInvalidBounds(double minLat, double maxLat, double minLng, double maxLng) {
         return minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180 || minLat >= maxLat || minLng >= maxLng;
-    }
-
-    private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
-        double r = 6371.0088;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-
-        return 2 * r * Math.asin(Math.sqrt(a));
     }
 
     private List<Image> rebuildImageOrder(Location location, List<ImageRequest> imageRequests,

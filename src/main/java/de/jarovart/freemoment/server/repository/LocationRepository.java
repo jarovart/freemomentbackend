@@ -117,7 +117,7 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
                   )
             order by l.creationDateTime desc, l.id desc
             """)
-    List<Location> searchH2Chunk(
+    Slice<Location> getSliceLocationsByFilterSettings(
             @Param("rangeStart") LocalDateTime rangeStart,
             @Param("rangeEnd") LocalDateTime rangeEnd,
             @Param("minLat") double minLat,
