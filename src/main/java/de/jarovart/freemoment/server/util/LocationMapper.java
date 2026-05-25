@@ -6,10 +6,11 @@ import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.entities.Image;
 import de.jarovart.freemoment.server.model.entities.Location;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Überlege auf MapStruct zu wechseln. Ab +10 DTOs.
@@ -56,9 +57,10 @@ public class LocationMapper {
         if (location.getThumbnailImage() != null) {
             thumbnailResponse = ImageMapper.toImageResponse(location.getThumbnailImage());
         }
-        Set<ImageResponse> imageResponses = location.getImages().stream()
-                                                    .map(ImageMapper::toImageResponse)
-                                                    .collect(Collectors.toSet());
+        List<ImageResponse> imageResponses = location.getImages().stream()
+                                                     .sorted(Comparator.comparing(Image::getSortIndex))
+                                                     .map(ImageMapper::toImageResponse)
+                                                     .toList();
 
         return new LocationFullResponse(location.getId(),
                                         location.getTitle(),

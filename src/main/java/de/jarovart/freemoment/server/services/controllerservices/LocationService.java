@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.services.controllerservices;
 
+import de.jarovart.freemoment.server.model.dtos.requests.ImageRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.UpdateMyLocationRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.UpdateThumbnailRequest;
@@ -24,10 +25,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional(readOnly = true)
@@ -79,8 +86,8 @@ public class LocationService {
     }
 
     @Transactional
-    public LocationFullResponse updateMyLocation(Long locationId, UpdateMyLocationRequest locationRequest,
-                                                 Long userId) {
+    public LocationFullResponse updateMyLocation1(Long locationId, UpdateMyLocationRequest locationRequest,
+                                                  Long userId) {
         Location location = getLocationFull(locationRequest.getId());
 
         if (!location.getCreatedUser().getId().equals(userId)) {
@@ -89,6 +96,34 @@ public class LocationService {
         }
         var mappedLocation = LocationMapper.fromUpdateRequest(location, locationRequest);
         Location savedLocation = locationRepository.save(mappedLocation);
+        return locationMappingService.mapToLocationFullResponse(savedLocation, userId);
+    }
+
+    @Transactional
+    public LocationFullResponse updateMyLocation(Long locationId, UpdateMyLocationRequest request,
+                                                 List<MultipartFile> files, List<String> clientKeys, Long userId) {
+        Location location = getLocationFull(locationId);
+
+        if (!location.getCreatedUser().getId().equals(userId)) {
+            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER",
+                                               ErrorCode.LOCATION_FORBIDDEN);
+        }
+
+        LocationMapper.fromUpdateRequest(location, request);
+        Map<String, Image> newImagesByClientKey = imageService.storeLocationImagesMappedByClientKey(files, clientKeys,
+                                                                                                    userId, location);
+        List<Image> orderedImages = rebuildImageOrder(location, request.getImageRequests(), newImagesByClientKey);
+        location.getImages().clear();
+
+        IntStream.range(0, orderedImages.size()).forEach(i -> {
+            Image image = orderedImages.get(i);
+            image.setLocation(location);
+            image.setSortIndex(i);
+            location.getImages().add(image);
+        });
+
+        location.setThumbnailImage(orderedImages.isEmpty() ? null : orderedImages.getFirst());
+        Location savedLocation = locationRepository.save(location);
         return locationMappingService.mapToLocationFullResponse(savedLocation, userId);
     }
 
@@ -364,5 +399,34 @@ public class LocationService {
                 * Math.sin(dLon / 2);
 
         return 2 * r * Math.asin(Math.sqrt(a));
+    }
+
+    private List<Image> rebuildImageOrder(Location location, List<ImageRequest> imageRequests,
+                                          Map<String, Image> newImagesByClientKey) {
+        Map<Long, Image> existingImagesById = location.getImages()
+                                                      .stream()
+                                                      .collect(Collectors.toMap(Image::getId, Function.identity()));
+
+        return imageRequests.stream()
+                            .sorted(Comparator.comparing(ImageRequest::getSortIndex))
+                            .map(item -> {
+                                if (item.getIsNew()) {
+                                    Image image = newImagesByClientKey.get(item.getClientKey());
+                                    if (image == null) {
+                                        throw new ServiceResponseException(HttpStatus.BAD_REQUEST,
+                                                                           "NEW_IMAGE_NOT_FOUND",
+                                                                           ErrorCode.IMAGE_NOT_FOUND);
+                                    }
+                                    return image;
+                                }
+
+                                Image image = existingImagesById.get(item.getId());
+                                if (image == null) {
+                                    throw new ServiceResponseException(HttpStatus.BAD_REQUEST,
+                                                                       "IMAGE_NOT_BELONG_TO_LOCATION",
+                                                                       ErrorCode.IMAGE_NOT_FOUND);
+                                }
+                                return image;
+                            }).toList();
     }
 }

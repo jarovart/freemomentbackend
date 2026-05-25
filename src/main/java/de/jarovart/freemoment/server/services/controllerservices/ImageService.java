@@ -21,8 +21,11 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional(readOnly = true)
@@ -97,6 +100,23 @@ public class ImageService {
                                                    ErrorCode.IMAGE_NOT_FOUND));
         imageRepository.delete(image);
         deleteImage(image.getFilename());
+    }
+
+    @Transactional
+    public Map<String, Image> storeLocationImagesMappedByClientKey(List<MultipartFile> files, List<String> clientKeys,
+                                                                   Long userId, Location location) {
+        if (files.size() != clientKeys.size()) {
+            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "IMAGE_CLIENT_KEY_MISMATCH",
+                                               ErrorCode.IMAGE_NOT_FOUND);
+        }
+        AppUser user = userService.getUser(userId);
+        Map<String, Image> result = new HashMap<>();
+
+        IntStream.range(0, files.size()).forEach(i -> {
+            Image image = storeUploadedImages(List.of(files.get(i)), user, location).getFirst();
+            result.put(clientKeys.get(i), image);
+        });
+        return result;
     }
 
     private ImageResponse createImageResponse(Image image) {

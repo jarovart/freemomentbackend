@@ -64,7 +64,7 @@ public class DbSeeding {
             );
             user = userRepository.save(user);
 
-            Image profileImage = createImage(user, imagecc);
+            Image profileImage = createImage(user, imagecc, 0);
             profileImage = imageRepository.save(profileImage);
 
             user.setProfileImage(profileImage);
@@ -229,11 +229,12 @@ public class DbSeeding {
         return user;
     }
 
-    private Image createImage(AppUser user, String filename) {
+    private Image createImage(AppUser user, String filename, int index) {
         Image image = new Image();
         image.setUploadedByUser(user);
         image.setCreationDateTime(LocalDateTime.now());
         image.setFilename(filename);
+        image.setSortIndex(index);
         image.setSize(1);
         image.setContentType("image/jpeg");
         return image;
@@ -263,16 +264,18 @@ public class DbSeeding {
         location.setCreatedUser(createdUser);
 
         if (thumbnailUrl != null && !thumbnailUrl.isEmpty()) {
-            Image thumbnailImage = createImage(createdUser, thumbnailUrl);
+            Image thumbnailImage = createImage(createdUser, thumbnailUrl, 0);
             thumbnailImage.setLocation(location);
             location.setThumbnailImage(thumbnailImage);
         }
 
         Set<Image> images = new HashSet<>();
+        int i = 1;
         for (String imageUrl : imageUrls) {
-            Image image = createImage(createdUser, imageUrl);
+            Image image = createImage(createdUser, imageUrl, i);
             image.setLocation(location);
             images.add(image);
+            i++;
         }
         location.setImages(images);
 

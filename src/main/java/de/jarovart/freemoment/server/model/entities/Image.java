@@ -30,6 +30,7 @@ public class Image {
     private String filename;
     private String contentType;
     private long size;
+    private int sortIndex;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "uploaded_by_user_id")

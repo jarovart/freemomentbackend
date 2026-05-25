@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 @Data
 public class LocationFullResponse {
@@ -24,7 +24,7 @@ public class LocationFullResponse {
     @NotNull
     private Double longitude;
     private ImageResponse thumbnailImage;
-    private Set<ImageResponse> images;
+    private List<ImageResponse> images;
     private Long createdUserId;
     private String createdUsername;
     private long likedUserCount;
@@ -35,7 +35,7 @@ public class LocationFullResponse {
     public LocationFullResponse(Long id, String title, String description, String address,
                                 LocalDateTime creationDateTime, LocalDateTime startDateTime, LocalDateTime endDateTime,
                                 Double latitude, Double longitude, ImageResponse thumbnailImage,
-                                Set<ImageResponse> images, Long createdUserId, String createdUsername,
+                                List<ImageResponse> images, Long createdUserId, String createdUsername,
                                 long likedUserCount, long joinedUserCount, Boolean likedByCurrentUser,
                                 Boolean joinedByCurrentUser) {
         this.id = id;

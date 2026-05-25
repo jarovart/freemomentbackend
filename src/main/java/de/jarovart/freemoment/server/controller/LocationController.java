@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,9 +31,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,12 +140,43 @@ public class LocationController {
                 locationService.updateThumbnailLocation(locationId, updateThumbnailRequest, principal.getId()));
     }
 
-    @PatchMapping("/{locationId}")
+    //@PatchMapping("/{locationId}")
     public ResponseEntity<LocationFullResponse> updateMyLocation(@PathVariable Long locationId,
                                                                  @Valid @RequestBody UpdateMyLocationRequest locationRequest,
                                                                  @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("PATCH /api/location1/{} updateMyLocation wurde aufgerufen", locationId);
+        LocationFullResponse loc = locationService.updateMyLocation1(locationId, locationRequest, user.getId());
+        return ResponseEntity.ok(loc);
+    }
+
+    @PatchMapping(
+            value = "/{locationId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<LocationFullResponse> updateMyLocation(
+            @PathVariable Long locationId,
+            @RequestPart("data")
+            @Valid UpdateMyLocationRequest locationRequest,
+            @RequestPart(value = "files", required = false)
+            List<MultipartFile> files,
+            @RequestParam(value = "clientKeys", required = false)
+            String clientKeysCsv,
+            @AuthenticationPrincipal JarovartUserDetails user
+    ) {
         log.info("PATCH /api/location/{} updateMyLocation wurde aufgerufen", locationId);
-        LocationFullResponse loc = locationService.updateMyLocation(locationId, locationRequest, user.getId());
+        List<String> clientKeys = clientKeysCsv == null || clientKeysCsv.isBlank()
+                ? List.of()
+                : List.of(clientKeysCsv.split(","));
+
+        LocationFullResponse loc = locationService.updateMyLocation(
+                locationId,
+                locationRequest,
+                files == null ? Collections.emptyList() : files,
+                clientKeys,
+                user.getId()
+        );
+
         return ResponseEntity.ok(loc);
     }
 
