@@ -1,6 +1,7 @@
 package de.jarovart.freemoment.server.util;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.UpdateMyLocationRequest;
 import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
@@ -90,5 +91,16 @@ public class LocationMapper {
                 locationCreateRequest.getLongitude(),
                 user
         );
+    }
+
+    public static Location fromUpdateRequest(Location location, UpdateMyLocationRequest updateMyLocationRequest) {
+        location.setTitle(updateMyLocationRequest.getTitle());
+        location.setDescription(updateMyLocationRequest.getDescription());
+        location.setAddress(updateMyLocationRequest.getAddress());
+        location.setLatitude(updateMyLocationRequest.getLatitude());
+        location.setLongitude(updateMyLocationRequest.getLongitude());
+        location.setStartDateTime(updateMyLocationRequest.getStartDateTime());
+        location.setEndDateTime(updateMyLocationRequest.getEndDateTime());
+        return location;
     }
 }

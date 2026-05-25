@@ -1,6 +1,7 @@
 package de.jarovart.freemoment.server.services.controllerservices;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.UpdateMyLocationRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.UpdateThumbnailRequest;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
@@ -75,6 +76,20 @@ public class LocationService {
         location.setThumbnailImage(image);
         Location savedLocation = locationRepository.save(location);
         return locationMappingService.mapToLocationResponse(savedLocation, userId);
+    }
+
+    @Transactional
+    public LocationFullResponse updateMyLocation(Long locationId, UpdateMyLocationRequest locationRequest,
+                                                 Long userId) {
+        Location location = getLocationFull(locationRequest.getId());
+
+        if (!location.getCreatedUser().getId().equals(userId)) {
+            throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER",
+                                               ErrorCode.LOCATION_FORBIDDEN);
+        }
+        var mappedLocation = LocationMapper.fromUpdateRequest(location, locationRequest);
+        Location savedLocation = locationRepository.save(mappedLocation);
+        return locationMappingService.mapToLocationFullResponse(savedLocation, userId);
     }
 
     public LocationFullResponse getLocationById(Long id, Long userId) {

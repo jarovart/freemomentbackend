@@ -91,7 +91,8 @@ public class SecurityConfiguration {
                                             "/api/locations/*/like",
                                             "/api/locations/*/join").authenticated() // Upload
                            .requestMatchers(HttpMethod.PATCH,
-                                            "/api/users/me").authenticated()
+                                            "/api/users/me",
+                                            "/api/locations/*").authenticated()
                            .requestMatchers("/api/auth/**", "/h2-console/**", "/error").permitAll()
                            .anyRequest()
                            .authenticated())

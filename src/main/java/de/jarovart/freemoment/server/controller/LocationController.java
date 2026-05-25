@@ -5,6 +5,7 @@
 package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LocationCreateRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.UpdateMyLocationRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.UpdateThumbnailRequest;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
@@ -133,6 +134,15 @@ public class LocationController {
                  updateThumbnailRequest.getImageId(), principal.getUsername());
         return ResponseEntity.ok(
                 locationService.updateThumbnailLocation(locationId, updateThumbnailRequest, principal.getId()));
+    }
+
+    @PatchMapping("/{locationId}")
+    public ResponseEntity<LocationFullResponse> updateMyLocation(@PathVariable Long locationId,
+                                                                 @Valid @RequestBody UpdateMyLocationRequest locationRequest,
+                                                                 @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("PATCH /api/location/{} updateMyLocation wurde aufgerufen", locationId);
+        LocationFullResponse loc = locationService.updateMyLocation(locationId, locationRequest, user.getId());
+        return ResponseEntity.ok(loc);
     }
 
     @DeleteMapping("/{locationId}/like")
