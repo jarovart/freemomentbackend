@@ -71,7 +71,6 @@ public class DbSeeding {
 
             Image profileImage1 = createImage(user, imagecc);
             profileImage1 = imageRepository.save(profileImage1);
-
             List<AppUser> userList = createSeedingUsers(100, profileImage1, passwordEncoder);
             userList = userRepository.saveAll(userList);
 
