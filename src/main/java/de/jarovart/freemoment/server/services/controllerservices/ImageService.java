@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.services.controllerservices;
 
+import de.jarovart.freemoment.server.model.dtos.requests.ImageRequest;
 import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Image;
@@ -21,11 +22,9 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,8 +33,6 @@ public class ImageService {
     private final Path root = Paths.get("uploads");
     @Autowired
     private ImageRepository imageRepository;
-    @Autowired
-    private UserService userService;
     @Autowired
     private LocationImageService locationImageService;
 
@@ -46,20 +43,18 @@ public class ImageService {
     }
 
     @Transactional
-    public List<ImageResponse> storeImages(List<MultipartFile> files, Long userId) {
-        AppUser user = userService.getUserReference(userId);
+    public List<ImageResponse> storeImages(List<MultipartFile> files, AppUser user) {
         List<Image> images = storeUploadedImages(files, user, null);
         return createImageResponses(images);
     }
 
     @Transactional
-    public List<ImageResponse> storeImages(List<MultipartFile> files, Long userId, Long locationId) {
+    public List<ImageResponse> storeImages(List<MultipartFile> files, AppUser user, Long locationId) {
         Location location = locationImageService.getLocationWithCreatedUserAndImages(locationId);
 
-        if (!location.getCreatedUser().getId().equals(userId)) {
+        if (!location.getCreatedUser().getId().equals(user.getId())) {
             throw new ServiceResponseException(HttpStatus.FORBIDDEN, "NOT_LOCATION_OWNER", ErrorCode.IMAGE_NOT_FOUND);
         }
-        AppUser user = userService.getUser(userId);
 
         List<Image> images = storeUploadedImages(files, user, location);
         location.getImages().addAll(images);
@@ -67,13 +62,12 @@ public class ImageService {
     }
 
     @Transactional
-    public ImageResponse uploadMyProfileImage(MultipartFile file, Long userId) {
-        AppUser user = userService.getUserFull(userId);
+    public ImageResponse uploadMyProfileImage(MultipartFile file, AppUser user, boolean removeOldImage) {
         Image oldImage = user.getProfileImage();
         Image newImage = storeUploadedImage(file, user);
         user.setProfileImage(newImage);
-        userService.save(user);
-        if (oldImage != null) {
+        //userService.save(user);
+        if (oldImage != null && removeOldImage) {
             imageRepository.delete(oldImage);
             deleteImage(oldImage.getFilename());
         }
@@ -81,14 +75,14 @@ public class ImageService {
     }
 
     @Transactional
-    public void deleteMyProfileImage(Long userId) {
-        AppUser user = userService.getUserFull(userId);
+    public void deleteMyProfileImage(AppUser user) {
         Image image = user.getProfileImage();
         if (image == null) {
             return;
         }
 
         user.setProfileImage(null);
+        user.getUploadedImages().remove(image);
         imageRepository.delete(image);
         deleteImage(image.getFilename());
     }
@@ -103,20 +97,46 @@ public class ImageService {
     }
 
     @Transactional
-    public Map<String, Image> storeLocationImagesMappedByClientKey(List<MultipartFile> files, List<String> clientKeys,
-                                                                   Long userId, Location location) {
-        if (files.size() != clientKeys.size()) {
-            throw new ServiceResponseException(HttpStatus.BAD_REQUEST, "IMAGE_CLIENT_KEY_MISMATCH",
-                                               ErrorCode.IMAGE_NOT_FOUND);
+    public void updateProfileImage(AppUser user, MultipartFile file, boolean shouldRemoveImage) {
+        if (shouldRemoveImage || file != null) {
+            deleteMyProfileImage(user);
         }
-        AppUser user = userService.getUser(userId);
-        Map<String, Image> result = new HashMap<>();
 
-        IntStream.range(0, files.size()).forEach(i -> {
-            Image image = storeUploadedImages(List.of(files.get(i)), user, location).getFirst();
-            result.put(clientKeys.get(i), image);
-        });
-        return result;
+        if (file != null) {
+            Image image = storeUploadedImage(file, user);
+            user.setProfileImage(image);
+        }
+    }
+
+    @Transactional
+    public void updateLocationImages(List<ImageRequest> imageRequests, List<MultipartFile> newUploadFiles,
+                                     Location location) {
+        List<Image> locationImages = imageRepository.findByLocation_IdOrderByIdAsc(location.getId()).stream().toList();
+
+        List<Long> imageRequestIds = imageRequests.stream().map(ImageRequest::getId).filter(Objects::nonNull).toList();
+        List<String> filesToDelete = locationImages.stream().filter(img -> !imageRequestIds.contains(img.getId()))
+                                                   .map(Image::getFilename).toList();
+        List<Image> addedImaged = storeUploadedImages(newUploadFiles, location.getCreatedUser(), null);
+
+        List<Image> imagesToSet = new ArrayList<>();
+        for (ImageRequest imageRequest : imageRequests) {
+            if (imageRequest.getIsNew() && !addedImaged.isEmpty()) {
+                imagesToSet.add(addedImaged.removeFirst());
+            } else {
+                imagesToSet.add(imageRepository.getReferenceById(imageRequest.getId()));
+            }
+        }
+
+        location.getImages().clear();
+        for (Image image : imagesToSet) {
+            image.setLocation(location);
+            location.getImages().add(image);
+        }
+
+        if (!imagesToSet.isEmpty()) {
+            location.setThumbnailImage(imagesToSet.getFirst());
+        }
+        filesToDelete.forEach(this::deleteImage);
     }
 
     private ImageResponse createImageResponse(Image image) {

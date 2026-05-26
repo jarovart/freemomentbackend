@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -64,13 +63,13 @@ public class DbSeeding {
             );
             user = userRepository.save(user);
 
-            Image profileImage = createImage(user, imagecc, 0);
+            Image profileImage = createImage(user, imagecc);
             profileImage = imageRepository.save(profileImage);
 
             user.setProfileImage(profileImage);
             user = userRepository.save(user);
 
-            List<AppUser> userList = createSeedingUsers(100, profileImage, passwordEncoder);
+            List<AppUser> userList = createSeedingUsers(100, imagecc, passwordEncoder);
             userList = userRepository.saveAll(userList);
 
             AppUser user1 = createUser(
@@ -229,12 +228,11 @@ public class DbSeeding {
         return user;
     }
 
-    private Image createImage(AppUser user, String filename, int index) {
+    private Image createImage(AppUser user, String filename) {
         Image image = new Image();
         image.setUploadedByUser(user);
         image.setCreationDateTime(LocalDateTime.now());
         image.setFilename(filename);
-        image.setSortIndex(index);
         image.setSize(1);
         image.setContentType("image/jpeg");
         return image;
@@ -263,27 +261,29 @@ public class DbSeeding {
         location.setLongitude(lng);
         location.setCreatedUser(createdUser);
 
+        List<Image> images = new ArrayList<>();
         if (thumbnailUrl != null && !thumbnailUrl.isEmpty()) {
-            Image thumbnailImage = createImage(createdUser, thumbnailUrl, 0);
+            Image thumbnailImage = createImage(createdUser, thumbnailUrl);
             thumbnailImage.setLocation(location);
-            location.setThumbnailImage(thumbnailImage);
+            images.add(thumbnailImage);
         }
 
-        Set<Image> images = new HashSet<>();
-        int i = 1;
         for (String imageUrl : imageUrls) {
-            Image image = createImage(createdUser, imageUrl, i);
+            Image image = createImage(createdUser, imageUrl);
             image.setLocation(location);
             images.add(image);
-            i++;
         }
-        location.setImages(images);
+        location.getImages().addAll(images);
+
+        if (!images.isEmpty()) {
+            location.setThumbnailImage(images.getFirst());
+        }
 
         locationRepository.save(location);
         return location;
     }
 
-    private List<AppUser> createSeedingUsers(int userSize, Image profileImage, PasswordEncoder passwordEncoder) {
+    private List<AppUser> createSeedingUsers(int userSize, String imagePathUrl, PasswordEncoder passwordEncoder) {
         List<AppUser> userList = new ArrayList<>();
         for (int i = 0;
              i < userSize;
@@ -297,7 +297,7 @@ public class DbSeeding {
                     "test",
                     passwordEncoder
             );
-            user.setProfileImage(profileImage);
+            user.setProfileImage(createImage(user, imagePathUrl));
             userList.add(user);
         }
         return userList;

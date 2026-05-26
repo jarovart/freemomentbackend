@@ -1,8 +1,10 @@
 package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
+import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.services.controllerservices.ImageService;
+import de.jarovart.freemoment.server.services.controllerservices.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ public class ImageController {
 
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/{filename}")
     public ResponseEntity<Resource> serve(@PathVariable String filename) {
@@ -56,7 +60,8 @@ public class ImageController {
                  files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")),
                  authentication.getUsername());
 
-        List<ImageResponse> imageResponses = imageService.storeImages(files, authentication.getId());
+        AppUser user = userService.getUserReference(authentication.getId());
+        List<ImageResponse> imageResponses = imageService.storeImages(files, user);
         return ResponseEntity.ok(imageResponses);
     }
 
@@ -69,23 +74,26 @@ public class ImageController {
         log.info("POST /upload images file request with locationid {}: {} by {}", locationId,
                  files.stream().map(MultipartFile::getName).collect(Collectors.joining(", ")),
                  authentication.getUsername());
-        return ResponseEntity.ok(imageService.storeImages(files, authentication.getId(), locationId));
+        AppUser user = userService.getUserReference(authentication.getId());
+        return ResponseEntity.ok(imageService.storeImages(files, user, locationId));
     }
 
     @PostMapping("/me")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ImageResponse> uploadUserProfileImage(
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal JarovartUserDetails user) {
-        log.info("POST /upload my profile {} image file request: {} ", user.getUsername(), file.getName());
-        return ResponseEntity.ok(imageService.uploadMyProfileImage(file, user.getId()));
+            @AuthenticationPrincipal JarovartUserDetails userDetails) {
+        log.info("POST /upload my profile {} image file request: {} ", userDetails.getUsername(), file.getName());
+        AppUser user = userService.getUserReference(userDetails.getId());
+        return ResponseEntity.ok(imageService.uploadMyProfileImage(file, user, false));
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deleteMyProfileImage(@AuthenticationPrincipal JarovartUserDetails user) {
-        log.info("DELETE /api/images/me my {} profile image.", user.getUsername());
-        imageService.deleteMyProfileImage(user.getId());
+    public ResponseEntity<Void> deleteMyProfileImage(@AuthenticationPrincipal JarovartUserDetails userDetails) {
+        log.info("DELETE /api/images/me my {} profile image.", userDetails.getUsername());
+        AppUser user = userService.getUserReference(userDetails.getId());
+        imageService.deleteMyProfileImage(user);
         return ResponseEntity.noContent().build();
     }
 

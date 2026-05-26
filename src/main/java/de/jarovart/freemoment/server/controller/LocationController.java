@@ -160,20 +160,14 @@ public class LocationController {
             @Valid UpdateMyLocationRequest locationRequest,
             @RequestPart(value = "files", required = false)
             List<MultipartFile> files,
-            @RequestParam(value = "clientKeys", required = false)
-            String clientKeysCsv,
             @AuthenticationPrincipal JarovartUserDetails user
     ) {
         log.info("PATCH /api/location/{} updateMyLocation wurde aufgerufen", locationId);
-        List<String> clientKeys = clientKeysCsv == null || clientKeysCsv.isBlank()
-                ? List.of()
-                : List.of(clientKeysCsv.split(","));
 
         LocationFullResponse loc = locationService.updateMyLocation(
                 locationId,
                 locationRequest,
                 files == null ? Collections.emptyList() : files,
-                clientKeys,
                 user.getId()
         );
 

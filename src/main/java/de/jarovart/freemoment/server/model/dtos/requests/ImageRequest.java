@@ -9,5 +9,4 @@ public class ImageRequest {
     private Long id;
     private Boolean isNew;
     private String clientKey;
-    private Integer sortIndex;
 }

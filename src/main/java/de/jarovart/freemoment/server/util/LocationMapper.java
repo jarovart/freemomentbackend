@@ -6,10 +6,8 @@ import de.jarovart.freemoment.server.model.dtos.response.ImageResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationFullResponse;
 import de.jarovart.freemoment.server.model.dtos.response.LocationResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
-import de.jarovart.freemoment.server.model.entities.Image;
 import de.jarovart.freemoment.server.model.entities.Location;
 
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -58,7 +56,6 @@ public class LocationMapper {
             thumbnailResponse = ImageMapper.toImageResponse(location.getThumbnailImage());
         }
         List<ImageResponse> imageResponses = location.getImages().stream()
-                                                     .sorted(Comparator.comparing(Image::getSortIndex))
                                                      .map(ImageMapper::toImageResponse)
                                                      .toList();
 

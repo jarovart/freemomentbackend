@@ -22,8 +22,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -39,6 +41,8 @@ public class UserService {
 
     @Autowired
     private LocationMappingService locationMappingService;
+    @Autowired
+    private ImageService imageService;
 
     public AppUser getUserReference(Long userId) {
         return userRepository.getReferenceById(userId);
@@ -126,7 +130,7 @@ public class UserService {
     }
 
     @Transactional
-    public MyUserFullResponse updateMyProfile(Long userId, UpdateMyProfileRequest request) {
+    public MyUserFullResponse updateMyProfile(Long userId, UpdateMyProfileRequest request, List<MultipartFile> files) {
         AppUser user = userRepository.findByIdFull(userId)
                                      .orElseThrow(() -> new ServiceResponseException(HttpStatus.NOT_FOUND,
                                                                                      "USER_NOT_FOUND",
@@ -134,9 +138,15 @@ public class UserService {
         user.setFirstName(safeTrim(request.getFirstName()));
         user.setLastName(safeTrim(request.getLastName()));
         user.setAboutMe(safeTrim(request.getAboutMe()));
+
+        boolean shouldRemoveImage = request.isRemoveProfileImage();
+        MultipartFile file = files != null && !files.isEmpty() ? files.getFirst() : null;
+        imageService.updateProfileImage(user, file, shouldRemoveImage);
+
         AppUser savedUser = userRepository.save(user);
         return mapToMyUserFullResponse(savedUser);
     }
+
 
     public MyUserFullResponse mapToMyUserFullResponse(AppUser user) {
         long countLikedLocations = userRepository.countLikedLocations(user.getId());
