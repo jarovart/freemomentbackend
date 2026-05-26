@@ -69,7 +69,10 @@ public class DbSeeding {
             user.setProfileImage(profileImage);
             user = userRepository.save(user);
 
-            List<AppUser> userList = createSeedingUsers(100, imagecc, passwordEncoder);
+            Image profileImage1 = createImage(user, imagecc);
+            profileImage1 = imageRepository.save(profileImage1);
+
+            List<AppUser> userList = createSeedingUsers(100, profileImage1, passwordEncoder);
             userList = userRepository.saveAll(userList);
 
             AppUser user1 = createUser(
@@ -283,7 +286,7 @@ public class DbSeeding {
         return location;
     }
 
-    private List<AppUser> createSeedingUsers(int userSize, String imagePathUrl, PasswordEncoder passwordEncoder) {
+    private List<AppUser> createSeedingUsers(int userSize, Image profileImage, PasswordEncoder passwordEncoder) {
         List<AppUser> userList = new ArrayList<>();
         for (int i = 0;
              i < userSize;
@@ -297,7 +300,7 @@ public class DbSeeding {
                     "test",
                     passwordEncoder
             );
-            user.setProfileImage(createImage(user, imagePathUrl));
+            user.setProfileImage(profileImage);
             userList.add(user);
         }
         return userList;
