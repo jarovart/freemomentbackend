@@ -22,6 +22,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,7 +41,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(exclude = {"password", "createdLocations", "likedLocations", "joinedLocations", "profileImage",
-        "uploadedImages", "createdPlaces"})
+        "uploadedImages", "createdPlaces", "setting"})
 public class AppUser {
 
     @Id
@@ -90,6 +91,8 @@ public class AppUser {
     private Set<LocationJoin> joinedLocations = new HashSet<>();
     @OneToMany(mappedBy = "creatorUser", fetch = FetchType.LAZY)
     private List<Place> createdPlaces = new ArrayList<>();
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserSetting setting;
 
     public AppUser() {
     }

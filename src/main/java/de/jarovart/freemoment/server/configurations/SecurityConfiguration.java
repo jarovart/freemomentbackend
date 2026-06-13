@@ -81,7 +81,8 @@ public class SecurityConfiguration {
                                             "/api/users/*/liked",
                                             "/api/users/*/joined",
                                             "/api/locations/*/like",
-                                            "/api/locations/*/join").authenticated()
+                                            "/api/locations/*/join",
+                                            "/api/settings/me").authenticated()
                            .requestMatchers(HttpMethod.DELETE,
                                             "/api/locations/*/like",
                                             "/api/locations/*/join").authenticated()
@@ -89,7 +90,9 @@ public class SecurityConfiguration {
                                             "/api/images/upload",
                                             "/api/locations/createLocation",
                                             "/api/locations/*/like",
-                                            "/api/locations/*/join").authenticated() // Upload
+                                            "/api/locations/*/join").authenticated()
+                           .requestMatchers(HttpMethod.PUT,
+                                            "/api/users/me").authenticated()
                            .requestMatchers(HttpMethod.PATCH,
                                             "/api/users/me",
                                             "/api/locations/*").authenticated()

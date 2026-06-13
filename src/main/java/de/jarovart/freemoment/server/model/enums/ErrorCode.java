@@ -24,7 +24,8 @@ public enum ErrorCode {
     PROFILE_UPDATE_FAILED,
     PROFILE_IMAGE_TOO_LARGE,
     PROFILE_IMAGE_INVALID_TYPE,
-    LIKED_LOCATIONS_NOT_PUBLIC;
+    LIKED_LOCATIONS_NOT_PUBLIC,
+    SETTINGS_NOT_FOUND;
 
     public static LocationType from(String value) {
         return LocationType.valueOf(value.toUpperCase());
