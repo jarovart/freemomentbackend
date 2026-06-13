@@ -50,7 +50,9 @@ jobs:
           username: ${{ env.USERNAME }}
           key: ${{ env.SSH_KEY }}
           source: target/*.jar
-          target: ${{ env.APP_PATH }}/deploy
+          #target: ${{ env.APP_PATH }}/deploy
+          target: /opt/freemoment/deploy
+          
           
       - name: Restart application on Strato
         uses: appleboy/ssh-action@v1.0.3
