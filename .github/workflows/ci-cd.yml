@@ -12,6 +12,8 @@ env:
   PORT: ${{ secrets.STRATO_PORT }}
   USERNAME: ${{ secrets.STRATO_USER }}
   SSH_KEY: ${{ secrets.STRATO_SSH_KEY }}
+  APP_PATH: ${{ vars.APP_PATH }}
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
   MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
   MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
   #only for aws
