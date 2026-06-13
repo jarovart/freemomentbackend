@@ -36,21 +36,21 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
-
       - name: Run tests
         run: mvn test
+        
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
       - name: Upload jar to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: env.HOST
-          port: env.PORT
-          username: env.USERNAME
-          key: env.SSH_KEY
+          host: ${{ env.HOST }}
+          port: ${{ env.PORT }}
+          username: ${{ env.USERNAME }}
+          key: ${{ env.SSH_KEY }}
           source: target/*.jar
-          target: /opt/freemoment/deploy
+          target: ${{ env.APP_PATH }}/deploy
           
       - name: Restart application on Strato
         uses: appleboy/ssh-action@v1.0.3
