@@ -7,6 +7,7 @@ package de.jarovart.freemoment.server.configurations;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
 import de.jarovart.freemoment.server.util.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,9 @@ public class SecurityConfiguration {
 
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
+
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     public SecurityConfiguration(JwtService jwtService, AuthenticationService authenticationService) {
         this.jwtService = jwtService;
@@ -105,17 +109,19 @@ public class SecurityConfiguration {
                    .build();
     }
 
-    // 🔧 CORS-Setup für React
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+
+        config.setAllowedOriginPatterns(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 

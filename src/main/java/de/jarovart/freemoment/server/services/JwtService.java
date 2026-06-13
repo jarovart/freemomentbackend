@@ -10,8 +10,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
@@ -23,8 +25,12 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    private static final long VALIDITY_MS = 1000L * 60 * 60 * 24; // 24h
-    private final Key key = Keys.hmacShaKeyFor("change_this_to_a_long_random_secret_key_please!".getBytes());
+    private static final long VALIDITY_MS = 1000L * 60 * 60; // 1h
+    private final Key key;
+
+    public JwtService(@Value("${jwt.secret}") String jwtSecret) {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(String username, Map<String, Object> extraClaims) {
         Date now = new Date();
