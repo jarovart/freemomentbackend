@@ -1,18 +1,26 @@
-name: Spring Boot CI/CD to AWS ECS
+name: Deploy Spring Boot to Strato
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+  #pull_request:
+  #  branches: [ main ]
 
 env:
+  HOST: ${{ secrets.STRATO_HOST }}
+  PORT: ${{ secrets.STRATO_PORT }}
+  USERNAME: ${{ secrets.STRATO_USER }}
+  SSH_KEY: ${{ secrets.STRATO_SSH_KEY }}
+  APP_PATH: ${{ vars.APP_PATH }}
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+  MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+  MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+  #only for aws
   AWS_REGION: eu-central-1          # z. B. Frankfurt
   ECR_REPOSITORY: freemomentrepo    # Name deines ECR-Repos
   ECS_CLUSTER: freemomentCluster
   ECS_SERVICE: freemomentService
-  MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-  MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
 
 jobs:
   build-and-deploy:
@@ -23,17 +31,46 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
+      - name: Run tests
+        run: mvn test
+        
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Run tests
-        run: mvn test
-
+      - name: Upload jar to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.HOST }}
+          port: ${{ env.PORT }}
+          username: ${{ env.USERNAME }}
+          key: ${{ env.SSH_KEY }}
+          source: target/*.jar
+          #target: ${{ env.APP_PATH }}/deploy
+          target: /opt/freemoment/deploy
+          
+          
+      - name: Restart application on Strato
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.HOST }}
+          port: ${{ env.PORT }}
+          username: ${{ env.USERNAME }}
+          key: ${{ env.SSH_KEY }}
+          script: |
+            set -e
+            APP_PATH="/opt/freemoment"
+            SERVICE_NAME="freemoment"
+      
+            JAR=$(ls "$APP_PATH/deploy/target/"*.jar | head -n 1)
+            cp "$JAR" "$APP_PATH/app.jar"
+      
+            sudo systemctl restart "$SERVICE_NAME"
+            sudo systemctl status "$SERVICE_NAME" --no-pager
 #      - name: Configure AWS credentials
 #        uses: aws-actions/configure-aws-credentials@v4
  #       with:
