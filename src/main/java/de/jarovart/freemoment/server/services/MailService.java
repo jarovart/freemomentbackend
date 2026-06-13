@@ -3,6 +3,8 @@ package de.jarovart.freemoment.server.services;
 import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.SendingEmailException;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,14 +16,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class MailService {
 
+    private static final Logger log = LoggerFactory.getLogger(MailService.class);
     @Value("${spring.mail.username}")
     private String mailUsername;
-
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
     @Autowired
     private JavaMailSender mailSender;
 
     public void sendVerificationMail(String receiverEmail, String token) throws SendingEmailException {
-        String link = "https://meetmaap.app/verifyemail?token=" + token;
+        String link = frontendUrl + "/verifyemail?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailUsername);
@@ -37,15 +41,20 @@ public class MailService {
                                 """.formatted(link));
 
         try {
+            log.info("Sending verification mail to {}", receiverEmail);
             mailSender.send(message);
+            log.info("Verification mail sent to {}", receiverEmail);
         } catch (MailException e) {
-            throw new ServiceResponseException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
-                                               ErrorCode.USER_EMAIL_INVALID);
+            throw new ServiceResponseException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    ErrorCode.USER_EMAIL_INVALID
+            );
         }
     }
 
     public void sendPasswordResetMail(String receiverEmail, String token) {
-        String link = "https://meetmaap.app/reset-password?token=" + token;
+        String link = frontendUrl + "/reset-password?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailUsername);
@@ -61,9 +70,15 @@ public class MailService {
                                 """.formatted(link));
 
         try {
+            log.info("Sending password reset mail to {}", receiverEmail);
             mailSender.send(message);
+            log.info("password reset mail sent to {}", receiverEmail);
         } catch (MailException e) {
-            throw new SendingEmailException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            throw new ServiceResponseException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    ErrorCode.USER_EMAIL_INVALID
+            );
         }
     }
 }
