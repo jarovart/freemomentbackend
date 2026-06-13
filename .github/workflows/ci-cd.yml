@@ -16,6 +16,7 @@ env:
   SERVICE_NAME: ${{ vars.SERVICE_NAME }}
   MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
   MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
   #only for aws
   AWS_REGION: eu-central-1          # z. B. Frankfurt
   ECR_REPOSITORY: freemomentrepo    # Name deines ECR-Repos
@@ -38,6 +39,11 @@ jobs:
 
       - name: Run tests
         run: mvn test
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          JWT_SECRET: test_secret_1234567890123456789012345678901234567890
+          MAIL_USERNAME: test@example.com
+          MAIL_PASSWORD: test-password
         
       - name: Build with Maven
         run: mvn clean package -DskipTests
