@@ -63,8 +63,8 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
-            APP_PATH="${{ env.APP_PATH }}"
-            SERVICE_NAME="${{ env.SERVICE_NAME }}"
+            APP_PATH="/opt/freemoment"
+            SERVICE_NAME="freemoment"
       
             JAR=$(ls "$APP_PATH/deploy/target/"*.jar | head -n 1)
             cp "$JAR" "$APP_PATH/app.jar"
