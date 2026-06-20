@@ -78,6 +78,8 @@ jobs:
             SERVICE_NAME="freemoment"
       
             JAR=$(ls "$APP_PATH/deploy/target/"*.jar | head -n 1)
+            
+            echo "Using JAR: $JAR"
             cp "$JAR" "$APP_PATH/app.jar"
       
             sudo systemctl restart "$SERVICE_NAME"
