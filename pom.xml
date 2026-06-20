@@ -10,8 +10,8 @@
     </parent>
     <groupId>de.jarovart.freemoment</groupId>
     <artifactId>server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>FreemomentBackend</name>
+    <version>0.0.1</version>
+    <name>CastTimeBackend</name>
     <description>Demo project for Spring Boot</description>
     <url/>
     <licenses>
@@ -105,22 +105,6 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- DB (z.B. H2 dev) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Optional: PostgreSQL für Prod -->
-        <!--
-        <dependency>
-          <groupId>org.postgresql</groupId>
-          <artifactId>postgresql</artifactId>
-          <scope>runtime</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -160,6 +144,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -167,8 +154,14 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>

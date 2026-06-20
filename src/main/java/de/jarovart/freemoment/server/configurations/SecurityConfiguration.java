@@ -62,28 +62,30 @@ public class SecurityConfiguration {
                            .permitAll()
                            .requestMatchers(HttpMethod.GET,
                                             "/api/images/**",
+                                            "/api/info/status",
                                             "/api/locations/**",
                                             "/api/locations/findByFilter",
                                             "/api/locations/findById**",
                                             "/api/locations/search**",
                                             "/api/locations/within**",
                                             "/api/locations/withinWithTime**",
-                                            "/api/places*"
+                                            "/api/places*",
+                                            "/api/users/findByUsername*",
+                                            "/api/users/*/locations/created",
+                                            "/api/users/*/locations/joined"
                            ).permitAll()
                            .requestMatchers(HttpMethod.OPTIONS,
                                             "/api/auth/**",
                                             "/api/users/me").permitAll()
                            .requestMatchers(HttpMethod.GET,
+                                            "/api/info/fullStatus",
                                             "/api/users/all",
-                                            "/api/users/findByUsername*",
                                             "/api/users/*/locations/created",
                                             "/api/users/*/locations/joined",
                                             "/api/users/query",
                                             "/api/users/id",
                                             "/api/users/me",
-                                            "/api/users/*/created",
-                                            "/api/users/*/liked",
-                                            "/api/users/*/joined",
+                                            "/api/users/*/locations/liked",
                                             "/api/locations/*/like",
                                             "/api/locations/*/join",
                                             "/api/settings/me").authenticated()

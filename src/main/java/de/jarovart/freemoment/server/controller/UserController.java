@@ -63,14 +63,12 @@ public class UserController {
     }
 
     @GetMapping("/findById")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserFullResponse> findById(@RequestParam long id) {
         log.info("GET /api/users/findById={}", id);
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @GetMapping("/findByUsername")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserFullResponse> findByUsername(@RequestParam String username) {
         log.info("GET /api/users/findByUsername={}", username);
         return ResponseEntity.ok(userService.findByUsername(username));
@@ -86,8 +84,7 @@ public class UserController {
     public ResponseEntity<Slice<LocationResponse>> getCreatedLocationsByUserIdPaged(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @AuthenticationPrincipal JarovartUserDetails userDetails
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
         log.info("GET getCreatedLocationsByUserIdPaged /api/users/{}/locations/created page={} size={}", userId, page,
                  pageSize);
@@ -96,6 +93,7 @@ public class UserController {
     }
 
     @GetMapping("{userId}/locations/liked")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<LocationResponse>> getLikedLocationsByUserIdPaged(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -113,8 +111,7 @@ public class UserController {
     public ResponseEntity<Slice<LocationResponse>> getJoinedLocationsByUserIdPaged(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal JarovartUserDetails userDetails
+            @RequestParam(defaultValue = "10") int size
     ) {
         log.info("GET getJoinedLocationsByUserIdPaged /api/users/{}/locations/joined page={} size={}", userId, page,
                  size);

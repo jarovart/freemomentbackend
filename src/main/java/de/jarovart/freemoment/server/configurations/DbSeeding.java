@@ -60,7 +60,8 @@ public class DbSeeding {
                     "info@jarovart.de",
                     "about me? i am the admin",
                     "test",
-                    passwordEncoder
+                    passwordEncoder,
+                    true
             );
             user = userRepository.save(user);
 
@@ -82,7 +83,8 @@ public class DbSeeding {
                     "info2@jarovart.de",
                     "what should I tell u?",
                     "test123",
-                    passwordEncoder
+                    passwordEncoder,
+                    false
             );
             user1 = userRepository.save(user1);
 
@@ -216,7 +218,8 @@ public class DbSeeding {
             String email,
             String aboutMe,
             String rawPassword,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            boolean isAdmin
     ) {
         AppUser user = new AppUser();
         user.setUsername(username);
@@ -226,7 +229,11 @@ public class DbSeeding {
         user.setAboutMe(aboutMe);
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRoles(Set.of(UserRole.ROLE_USER));
+        if (isAdmin) {
+            user.setRoles(Set.of(UserRole.ROLE_USER, UserRole.ROLE_ADMIN));
+        } else {
+            user.setRoles(Set.of(UserRole.ROLE_USER));
+        }
 
         return user;
     }
@@ -298,7 +305,8 @@ public class DbSeeding {
                     "info@jarovart.de" + i,
                     "about me? i am the randomuser" + i,
                     "test",
-                    passwordEncoder
+                    passwordEncoder,
+                    false
             );
             user.setProfileImage(profileImage);
             userList.add(user);
