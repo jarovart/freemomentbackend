@@ -44,6 +44,16 @@ jobs:
           JWT_SECRET: test_secret_1234567890123456789012345678901234567890
           MAIL_USERNAME: test@example.com
           MAIL_PASSWORD: test-password
+
+      - name: Clean deploy folder
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.HOST }}
+          port: ${{ env.PORT }}
+          username: ${{ env.USERNAME }}
+          key: ${{ env.SSH_KEY }}
+          script: |
+            rm -f /opt/freemoment/deploy/target/*.jar
         
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -77,7 +87,7 @@ jobs:
             APP_PATH="/opt/freemoment"
             SERVICE_NAME="freemoment"
       
-            JAR=$(ls "$APP_PATH/deploy/target/"*.jar | head -n 1)
+            JAR=$(ls -t "$APP_PATH/deploy/target/"*.jar | head -n 1)
             
             echo "Using JAR: $JAR"
             cp "$JAR" "$APP_PATH/app.jar"
