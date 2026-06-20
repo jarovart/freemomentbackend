@@ -308,7 +308,7 @@ public class DbSeeding {
                     passwordEncoder,
                     false
             );
-            user.setProfileImage(profileImage);
+            //user.setProfileImage(profileImage);
             userList.add(user);
         }
         return userList;

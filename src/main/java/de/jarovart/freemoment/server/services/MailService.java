@@ -30,9 +30,9 @@ public class MailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailUsername);
         message.setTo(receiverEmail);
-        message.setSubject("Meetmaap – E-Mail bestätigen");
+        message.setSubject("Cast-Time – E-Mail bestätigen");
         message.setText("""
-                                Willkommen bei Meetmaap 👋
+                                Willkommen bei Cast-Time 👋
                                 
                                 Bitte bestätige deine E-Mail-Adresse:
                                 %s
@@ -59,9 +59,9 @@ public class MailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailUsername);
         message.setTo(receiverEmail);
-        message.setSubject("Meetmaap – Passwort zurücksetzen");
+        message.setSubject("Cast-Time – Passwort zurücksetzen");
         message.setText("""
-                                Willkommen bei Meetmaap 👋
+                                Willkommen bei Cast-Time 👋
                                 
                                 Bitte klicke auf den folgenden Link, um dein Passwort zurückzusetzen:
                                 %s
