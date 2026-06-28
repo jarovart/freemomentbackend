@@ -2,8 +2,10 @@ package de.jarovart.freemoment.server.model.enums;
 
 public enum AppDesignEnum {
     SYSTEM,
+    LIGHTBLACK,
     LIGHTROSE,
-    DARK,
+    LIGHTWINE,
+    DARKWHITE,
     DARKPINK,
     DARKGOLD,
     CUSTOM;
