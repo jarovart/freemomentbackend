@@ -10,7 +10,6 @@ env:
   PORT: ${{ secrets.STRATO_PORT }}
   USERNAME: ${{ secrets.STRATO_USER }}
   SSH_KEY: ${{ secrets.STRATO_SSH_KEY }}
-  APP_PATH: ${{ vars.APP_PATH }}
   SERVICE_NAME: ${{ vars.SERVICE_NAME }}
   MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
   MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
@@ -19,6 +18,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: Casttime4meEnvironments
 
     steps:
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         run: mvn test
         env:
-          SPRING_PROFILES_ACTIVE: dev
+          SPRING_PROFILES_ACTIVE: prod
           JWT_SECRET: test_secret_1234567890123456789012345678901234567890
           MAIL_USERNAME: test@example.com
           MAIL_PASSWORD: test-password
@@ -46,7 +46,7 @@ jobs:
           username: ${{ env.USERNAME }}
           key: ${{ env.SSH_KEY }}
           script: |
-            rm -f /opt/freemoment/deploy/target/*.jar
+            rm -f ${{ vars.APP_PATH }}/deploy/target/*.jar
         
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -64,8 +64,7 @@ jobs:
           username: ${{ env.USERNAME }}
           key: ${{ env.SSH_KEY }}
           source: target/*.jar
-          #target: ${{ env.APP_PATH }}/deploy
-          target: /opt/freemoment/deploy
+          target: ${{ vars.APP_PATH }}/deploy
           
           
       - name: Restart application on Strato
@@ -77,8 +76,8 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
-            APP_PATH="/opt/freemoment"
-            SERVICE_NAME="freemoment"
+            APP_PATH="${{ vars.APP_PATH }}"
+            SERVICE_NAME="${{ vars.SERVICE_NAME }}"
       
             JAR=$(ls -t "$APP_PATH/deploy/target/"*.jar | head -n 1)
             
@@ -86,4 +85,5 @@ jobs:
             cp "$JAR" "$APP_PATH/app.jar"
       
             sudo systemctl restart "$SERVICE_NAME"
+            sleep 10
             sudo systemctl status "$SERVICE_NAME" --no-pager
