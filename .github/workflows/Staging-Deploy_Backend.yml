@@ -51,7 +51,7 @@ jobs:
           username: ${{ env.USERNAME }}
           key: ${{ env.SSH_KEY }}
           script: |
-            rm -f /opt/freemoment/deploy/target/*.jar
+            rm -f ${{ vars.APP_PATH }}/deploy/target/*.jar
         
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -70,7 +70,7 @@ jobs:
           key: ${{ env.SSH_KEY }}
           source: target/*.jar
           #target: ${{ env.APP_PATH }}/deploy
-          target: /opt/freemoment/deploy
+          target: ${{ vars.APP_PATH }}/deploy
           
           
       - name: Restart application on Strato
