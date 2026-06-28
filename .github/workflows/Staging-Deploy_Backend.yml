@@ -2,10 +2,8 @@ name: Deploy Spring Boot to Strato
 
 on:
   push:
-    branches: [ main ]
+    branches: [ staging ]
   workflow_dispatch:
-  #pull_request:
-  #  branches: [ main ]
 
 env:
   HOST: ${{ secrets.STRATO_HOST }}
@@ -18,8 +16,8 @@ env:
   MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   #only for aws
-  AWS_REGION: eu-central-1          # z. B. Frankfurt
-  ECR_REPOSITORY: freemomentrepo    # Name deines ECR-Repos
+  AWS_REGION: eu-central-1         
+  ECR_REPOSITORY: freemomentrepo    
   ECS_CLUSTER: freemomentCluster
   ECS_SERVICE: freemomentService
 
