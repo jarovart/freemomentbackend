@@ -1,4 +1,4 @@
-name: Deploy Spring Boot to Strato
+name: Deploy Spring Boot to Strato (Staging)
 
 on:
   push:
