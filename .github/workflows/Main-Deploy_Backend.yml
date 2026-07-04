@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         run: mvn test
         env:
-          SPRING_PROFILES_ACTIVE: prod
+          SPRING_PROFILES_ACTIVE: dev
           JWT_SECRET: test_secret_1234567890123456789012345678901234567890
           MAIL_USERNAME: test@example.com
           MAIL_PASSWORD: test-password
