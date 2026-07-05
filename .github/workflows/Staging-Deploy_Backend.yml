@@ -72,8 +72,7 @@ jobs:
           #target: ${{ env.APP_PATH }}/deploy
           target: ${{ vars.APP_PATH }}/deploy
           
-          
-      - name: Restart application on Strato with automatic rollback on failure
+      - name: Deploy with automatic rollback
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.HOST }}
@@ -82,28 +81,30 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
+      
             APP_PATH="${{ vars.APP_PATH }}"
             SERVICE_NAME="${{ vars.SERVICE_NAME }}"
-            HEALTH_URL="${{ vars.HEALTH_URL_STAGING }}"
-            
+            HEALTH_URL="${{ secrets.HEALTH_URL_STAGING }}"
+      
             PREVIOUS_RELEASE=""
             if [ -L "$APP_PATH/current" ]; then
               PREVIOUS_RELEASE=$(readlink -f "$APP_PATH/current")
               echo "Previous release: $PREVIOUS_RELEASE"
             fi
-
+      
             RELEASE_ID=$(date +"%Y%m%d-%H%M%S")
             RELEASE_DIR="$APP_PATH/releases/$RELEASE_ID"
             mkdir -p "$RELEASE_DIR"
       
             JAR=$(ls -t "$APP_PATH/deploy/target/"*.jar | head -n 1)
             echo "Using JAR: $JAR"
-            cp "$JAR" "$APP_PATH/app.jar"
+      
+            cp "$JAR" "$RELEASE_DIR/app.jar"
             ln -sfn "$RELEASE_DIR" "$APP_PATH/current"
       
             sudo systemctl restart "$SERVICE_NAME"
             sleep 15
-            
+      
             if curl -fsS "$HEALTH_URL" > /dev/null; then
               echo "Health check passed."
             else
