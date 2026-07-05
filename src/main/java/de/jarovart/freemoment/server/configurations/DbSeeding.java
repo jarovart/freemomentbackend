@@ -15,11 +15,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,15 +34,14 @@ import java.util.Set;
 @Configuration
 public class DbSeeding {
 
-    private final ImageRepository imageRepository;
     private final LocationRepository locationRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final Environment environment;
 
-    public DbSeeding(ImageRepository imageRepository, LocationRepository locationRepository,
-                     JdbcTemplate jdbcTemplate) {
-        this.imageRepository = imageRepository;
+    public DbSeeding(LocationRepository locationRepository, JdbcTemplate jdbcTemplate, Environment environment) {
         this.locationRepository = locationRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }
 
     @Bean
@@ -53,16 +54,23 @@ public class DbSeeding {
             if (appUser.isPresent() && appUser.get().getCreatedAt().isAfter(LocalDateTime.now().minusWeeks(2))) {
                 return;
             }
-            jdbcTemplate.execute("""
-                                         TRUNCATE TABLE
-                                             location_joined_users,
-                                             location_liked_users,
-                                             locations,
-                                             app_user,
-                                             images,
-                                             settings
-                                         RESTART IDENTITY CASCADE
-                                         """);
+
+            if (isStagingProfileActive()) {
+                jdbcTemplate.execute("""
+                                             TRUNCATE TABLE
+                                                 location_join,
+                                                 location_like,
+                                                 app_user_roles,
+                                                 password_reset_tokens,
+                                                 user_setting,
+                                                 pending_user,
+                                                 place,
+                                                 location,
+                                                 images,
+                                                 app_user
+                                             RESTART IDENTITY CASCADE
+                                             """);
+            }
 
             String image5b = "44c58561-5513-49b8-b539-4ee6d1644c5b.jpg";
             String image67 = "e42aab1e-880c-427b-8fd9-ed9018533167.jpg";
@@ -328,5 +336,9 @@ public class DbSeeding {
             userList.add(user);
         }
         return userList;
+    }
+
+    private boolean isStagingProfileActive() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("staging");
     }
 }
