@@ -54,11 +54,14 @@ public class DbSeeding {
                 return;
             }
             jdbcTemplate.execute("""
-                                             TRUNCATE TABLE
-                                                 app_user,
-                                                 images,
-                                                 locations
-                                             RESTART IDENTITY CASCADE
+                                         TRUNCATE TABLE
+                                             location_joined_users,
+                                             location_liked_users,
+                                             locations,
+                                             app_user,
+                                             images,
+                                             settings
+                                         RESTART IDENTITY CASCADE
                                          """);
 
             String image5b = "44c58561-5513-49b8-b539-4ee6d1644c5b.jpg";
