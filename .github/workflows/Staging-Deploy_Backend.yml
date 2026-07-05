@@ -94,6 +94,11 @@ jobs:
             sleep 10
             sudo systemctl status "$SERVICE_NAME" --no-pager
             
+      - name: Wait for application
+        run: |
+          sleep 10
+          curl --fail https://freemoment.de/api/info/status
+            
 #      - name: Configure AWS credentials
 #        uses: aws-actions/configure-aws-credentials@v4
  #       with:
