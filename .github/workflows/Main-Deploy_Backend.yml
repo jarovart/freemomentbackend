@@ -67,7 +67,7 @@ jobs:
           target: ${{ vars.APP_PATH }}/deploy
           
           
-      - name: Restart application on Strato
+      - name: Deploy with automatic rollback
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.HOST }}
@@ -76,19 +76,50 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
+      
             APP_PATH="${{ vars.APP_PATH }}"
             SERVICE_NAME="${{ vars.SERVICE_NAME }}"
+            HEALTH_URL="${{ secrets.HEALTH_URL_MAIN }}"
+      
+            PREVIOUS_RELEASE=""
+            if [ -L "$APP_PATH/current" ]; then
+              PREVIOUS_RELEASE=$(readlink -f "$APP_PATH/current")
+              echo "Previous release: $PREVIOUS_RELEASE"
+            fi
+      
+            RELEASE_ID=$(date +"%Y%m%d-%H%M%S")
+            RELEASE_DIR="$APP_PATH/releases/$RELEASE_ID"
+            mkdir -p "$RELEASE_DIR"
       
             JAR=$(ls -t "$APP_PATH/deploy/target/"*.jar | head -n 1)
-            
             echo "Using JAR: $JAR"
-            cp "$JAR" "$APP_PATH/app.jar"
+      
+            cp "$JAR" "$RELEASE_DIR/app.jar"
+            ln -sfn "$RELEASE_DIR" "$APP_PATH/current"
       
             sudo systemctl restart "$SERVICE_NAME"
-            sleep 10
-            sudo systemctl status "$SERVICE_NAME" --no-pager
-
-      - name: Wait for application
-        run: |
-          sleep 10
-          curl --fail https://freemoment.de/api/info/status
+            sleep 15
+      
+            if curl -fsS "$HEALTH_URL" > /dev/null; then
+              echo "Health check passed."
+            else
+              echo "Health check failed. Rolling back..."
+      
+              if [ -n "$PREVIOUS_RELEASE" ] && [ -d "$PREVIOUS_RELEASE" ]; then
+                ln -sfn "$PREVIOUS_RELEASE" "$APP_PATH/current"
+                sudo systemctl restart "$SERVICE_NAME"
+                sleep 10
+      
+                if curl -fsS "$HEALTH_URL" > /dev/null; then
+                  echo "Rollback successful."
+                else
+                  echo "Rollback failed. Manual check required."
+                fi
+              else
+                echo "No previous release found. Cannot rollback."
+              fi
+      
+              exit 1
+            fi
+      
+            find "$APP_PATH/releases" -mindepth 1 -maxdepth 1 -type d | sort | head -n -5 | xargs -r rm -rf
