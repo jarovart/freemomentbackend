@@ -98,6 +98,7 @@ jobs:
             ln -sfn "$RELEASE_DIR" "$APP_PATH/current"
       
             sudo systemctl restart "$SERVICE_NAME"
+            sudo systemctl reload caddy
             sleep 15
       
             if curl -fsS "$HEALTH_URL" > /dev/null; then
@@ -108,6 +109,7 @@ jobs:
               if [ -n "$PREVIOUS_RELEASE" ] && [ -d "$PREVIOUS_RELEASE" ]; then
                 ln -sfn "$PREVIOUS_RELEASE" "$APP_PATH/current"
                 sudo systemctl restart "$SERVICE_NAME"
+                sudo systemctl reload caddy
                 sleep 10
       
                 if curl -fsS "$HEALTH_URL" > /dev/null; then
