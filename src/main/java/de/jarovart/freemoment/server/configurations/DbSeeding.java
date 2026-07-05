@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -44,9 +45,13 @@ public class DbSeeding {
                                   ImageRepository imageRepository,
                                   PasswordEncoder passwordEncoder) {
         return args -> {
-            if (userRepository.findByUsername("jarovart").isPresent()) {
+            Optional<AppUser> appUser = userRepository.findByUsername("jarovart");
+            if (appUser.isPresent() && appUser.get().getCreatedAt().isAfter(LocalDateTime.now().minusWeeks(2))) {
                 return;
             }
+            locationRepository.deleteAll();
+            imageRepository.deleteAll();
+            userRepository.deleteAll();
 
             String image5b = "44c58561-5513-49b8-b539-4ee6d1644c5b.jpg";
             String image67 = "e42aab1e-880c-427b-8fd9-ed9018533167.jpg";
