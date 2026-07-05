@@ -87,3 +87,8 @@ jobs:
             sudo systemctl restart "$SERVICE_NAME"
             sleep 10
             sudo systemctl status "$SERVICE_NAME" --no-pager
+
+      - name: Wait for application
+        run: |
+          sleep 10
+          curl --fail https://freemoment.de/api/info/status
