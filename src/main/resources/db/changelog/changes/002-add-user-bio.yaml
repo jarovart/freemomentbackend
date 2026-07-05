@@ -1,0 +1,12 @@
+databaseChangeLog:
+- changeSet:
+    id: 1783259059893-1
+    author: Artem (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: last_logged_in_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        tableName: app_user
+

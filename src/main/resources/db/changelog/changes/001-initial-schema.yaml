@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-baseline-existing-schema
+      author: artem
+      changes:
+        - tagDatabase:
+            tag: initial-existing-schema

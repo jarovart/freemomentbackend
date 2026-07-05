@@ -1,0 +1,7 @@
+setx DB_URL "jdbc:postgresql://localhost:5432/freemoment"
+setx DB_USERNAME "freemoment_user"
+setx DB_PASSWORD "DEIN_PASSWORT"
+setx APP_FRONTEND_URL "http://localhost:8080"
+setx APP_CORS_ALLOWED "http://localhost:*,http://127.0.0.1:*"
+
+mvn liquibase:diff -Dliquibase.url=%DB_URL% -Dliquibase.username=%DB_USERNAME% -Dliquibase.password=%DB_PASSWORD% -Dmigration.name=002-add-user-bio     

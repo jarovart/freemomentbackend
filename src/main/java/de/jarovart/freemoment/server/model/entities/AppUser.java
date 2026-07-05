@@ -66,6 +66,7 @@ public class AppUser {
     private String email;
     private String aboutMe;
     private LocalDateTime createdAt;
+    private LocalDateTime lastLoggedInAt;
 
     // Banning fields
     private Boolean isBanned;

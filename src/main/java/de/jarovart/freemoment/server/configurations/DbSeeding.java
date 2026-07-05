@@ -26,7 +26,7 @@ import java.util.Set;
  *
  * @author Artem
  */
-@Profile({"dev", "staging"})
+@Profile({"dev"})
 @Configuration
 public class DbSeeding {
 
