@@ -15,6 +15,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -33,10 +34,13 @@ public class DbSeeding {
 
     private final ImageRepository imageRepository;
     private final LocationRepository locationRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public DbSeeding(ImageRepository imageRepository, LocationRepository locationRepository) {
+    public DbSeeding(ImageRepository imageRepository, LocationRepository locationRepository,
+                     JdbcTemplate jdbcTemplate) {
         this.imageRepository = imageRepository;
         this.locationRepository = locationRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Bean
@@ -49,9 +53,13 @@ public class DbSeeding {
             if (appUser.isPresent() && appUser.get().getCreatedAt().isAfter(LocalDateTime.now().minusWeeks(2))) {
                 return;
             }
-            locationRepository.deleteAll();
-            imageRepository.deleteAll();
-            userRepository.deleteAll();
+            jdbcTemplate.execute("""
+                                             TRUNCATE TABLE
+                                                 app_user,
+                                                 images,
+                                                 locations
+                                             RESTART IDENTITY CASCADE
+                                         """);
 
             String image5b = "44c58561-5513-49b8-b539-4ee6d1644c5b.jpg";
             String image67 = "e42aab1e-880c-427b-8fd9-ed9018533167.jpg";
