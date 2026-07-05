@@ -72,7 +72,7 @@ jobs:
           #target: ${{ env.APP_PATH }}/deploy
           target: ${{ vars.APP_PATH }}/deploy
           
-      - name: Deploy with automatic rollback
+      - name: Restart application on Strato
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.HOST }}
@@ -81,55 +81,22 @@ jobs:
           key: ${{ env.SSH_KEY }}
           script: |
             set -e
-      
             APP_PATH="${{ vars.APP_PATH }}"
             SERVICE_NAME="${{ vars.SERVICE_NAME }}"
-            HEALTH_URL="${{ secrets.HEALTH_URL_STAGING }}"
-      
-            PREVIOUS_RELEASE=""
-            if [ -L "$APP_PATH/current" ]; then
-              PREVIOUS_RELEASE=$(readlink -f "$APP_PATH/current")
-              echo "Previous release: $PREVIOUS_RELEASE"
-            fi
-      
-            RELEASE_ID=$(date +"%Y%m%d-%H%M%S")
-            RELEASE_DIR="$APP_PATH/releases/$RELEASE_ID"
-            mkdir -p "$RELEASE_DIR"
       
             JAR=$(ls -t "$APP_PATH/deploy/target/"*.jar | head -n 1)
+            
             echo "Using JAR: $JAR"
-      
-            cp "$JAR" "$RELEASE_DIR/app.jar"
-            ln -sfn "$RELEASE_DIR" "$APP_PATH/current"
+            cp "$JAR" "$APP_PATH/app.jar"
       
             sudo systemctl restart "$SERVICE_NAME"
-            sudo systemctl reload caddy
-            sleep 15
-      
-            if curl -fsS "$HEALTH_URL" > /dev/null; then
-              echo "Health check passed."
-            else
-              echo "Health check failed. Rolling back..."
-      
-              if [ -n "$PREVIOUS_RELEASE" ] && [ -d "$PREVIOUS_RELEASE" ]; then
-                ln -sfn "$PREVIOUS_RELEASE" "$APP_PATH/current"
-                sudo systemctl restart "$SERVICE_NAME"
-                sudo systemctl reload caddy
-                sleep 10
-      
-                if curl -fsS "$HEALTH_URL" > /dev/null; then
-                  echo "Rollback successful."
-                else
-                  echo "Rollback failed. Manual check required."
-                fi
-              else
-                echo "No previous release found. Cannot rollback."
-              fi
-      
-              exit 1
-            fi
-      
-            find "$APP_PATH/releases" -mindepth 1 -maxdepth 1 -type d | sort | head -n -5 | xargs -r rm -rf
+            sleep 10
+            sudo systemctl status "$SERVICE_NAME" --no-pager
+            
+      - name: Wait for application
+        run: |
+          sleep 10
+          curl --fail "${{ vars.HEALTH_URL }}"
                   
 #      - name: Configure AWS credentials
 #        uses: aws-actions/configure-aws-credentials@v4
