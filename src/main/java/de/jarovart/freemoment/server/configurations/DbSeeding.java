@@ -26,7 +26,7 @@ import java.util.Set;
  *
  * @author Artem
  */
-@Profile({"dev"})
+@Profile({"dev", "staging"})
 @Configuration
 public class DbSeeding {
 
@@ -44,9 +44,9 @@ public class DbSeeding {
                                   ImageRepository imageRepository,
                                   PasswordEncoder passwordEncoder) {
         return args -> {
-            if (userRepository.findByUsername("jarovart").isPresent()) {
+            /*if (userRepository.findByUsername("jarovart").isPresent()) {
                 return;
-            }
+            }*/
 
             String image5b = "44c58561-5513-49b8-b539-4ee6d1644c5b.jpg";
             String image67 = "e42aab1e-880c-427b-8fd9-ed9018533167.jpg";
