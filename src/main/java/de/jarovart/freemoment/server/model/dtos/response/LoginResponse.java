@@ -1,8 +1,10 @@
 package de.jarovart.freemoment.server.model.dtos.response;
 
 public record LoginResponse(
-        String token,
+        Long userId,
         String username,
-        Long userId
+        String myProfileUrl,
+        String token,
+        String refreshToken
 ) {
 }

@@ -11,14 +11,14 @@ public class MyUserFullResponse extends UserFullResponse {
 
     private String email;
     private LocalDateTime createdAt;
-    private long createdLocations;
+    private long createdLocationCount;
 
     public MyUserFullResponse(Long id, String username, String firstName, String lastName, ImageResponse profileImage,
                               String aboutMe, long likedLocationCount, long joinedLocationCount,
-                              String email, LocalDateTime createdAt, long createdLocations) {
+                              String email, LocalDateTime createdAt, long createdLocationCount) {
         super(id, username, firstName, lastName, profileImage, aboutMe, likedLocationCount, joinedLocationCount);
         this.email = email;
         this.createdAt = createdAt;
-        this.createdLocations = createdLocations;
+        this.createdLocationCount = createdLocationCount;
     }
 }

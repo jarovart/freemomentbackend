@@ -187,6 +187,34 @@ public class LocationController {
         return ResponseEntity.noContent().build(); // 204
     }
 
+    @GetMapping("/findByFilter")
+    public ResponseEntity<Slice<LocationResponse>> getSliceLocationsByFilterSettings(
+            @RequestParam(required = false) String query,
+            @RequestParam double minLat,
+            @RequestParam double maxLat,
+            @RequestParam double minLng,
+            @RequestParam double maxLng,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal JarovartUserDetails user
+    ) {
+        log.info(
+                "GET /findByFilter query={} page={} size={} minLat={} maxLat={} minLng={} "
+                        + "maxLng={} rangeStart={} rangeEnd={}",
+                query, page, size, minLat, maxLat, minLng, maxLng, rangeStart, rangeEnd
+        );
+
+        Long userId = user != null ? user.getId() : null;
+
+        var a = locationService.getSliceLocationsByFilterSettings(page, size, query, minLat, maxLat, minLng, maxLng,
+                                                                  rangeStart, rangeEnd, userId);
+        System.out.println(
+                "filtersetting: " + a.stream().map(LocationResponse::getTitle).collect(Collectors.joining(", ")));
+        return ResponseEntity.ok(a);
+    }
+
     /**********************************************************************************************
      *
      * Old data
@@ -225,33 +253,5 @@ public class LocationController {
                                                                                   rangeStart, rangeEnd, userId)
                                                 .stream()
                                                 .toList());
-    }
-
-    @GetMapping("/findByFilter")
-    public Slice<LocationResponse> getSliceLocationsByFilterSettings(
-            @RequestParam(required = false) String query,
-            @RequestParam double minLat,
-            @RequestParam double maxLat,
-            @RequestParam double minLng,
-            @RequestParam double maxLng,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeStart,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime rangeEnd,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal JarovartUserDetails user
-    ) {
-        log.info(
-                "GET /findByFilter query={} page={} size={} minLat={} maxLat={} minLng={} "
-                        + "maxLng={} rangeStart={} rangeEnd={}",
-                query, page, size, minLat, maxLat, minLng, maxLng, rangeStart, rangeEnd
-        );
-
-        Long userId = user != null ? user.getId() : null;
-
-        var a = locationService.getSliceLocationsByFilterSettings(page, size, query, minLat, maxLat, minLng, maxLng,
-                                                                  rangeStart, rangeEnd, userId);
-        System.out.println(
-                "filtersetting: " + a.stream().map(LocationResponse::getTitle).collect(Collectors.joining(", ")));
-        return a;
     }
 }

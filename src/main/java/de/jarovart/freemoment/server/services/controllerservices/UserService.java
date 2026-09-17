@@ -76,15 +76,24 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Slice<LocationResponse> getLikedLocationsByUserId(Long userId, int page, int pageSize) {
+    public Slice<LocationResponse> getLikedLocationsByUserIdPaged(Long userId, int page, int pageSize) {
         return locationLikerService.getLikedLocationsByUserIdPaged(userId, page, pageSize)
                                    .map(loc -> locationMappingService.mapToLocationResponse(loc, userId));
-
     }
 
-    public Slice<LocationResponse> getJoinedLocationsByUserId(Long userId, int page, int pageSize) {
+    public Slice<LocationResponse> getJoinedLocationsByUserIdPaged(Long userId, int page, int pageSize) {
         return locationJoiningService.getJoinedLocationsByUserIdPaged(userId, page, pageSize)
                                      .map(loc -> locationMappingService.mapToLocationResponse(loc, userId));
+    }
+
+    public Slice<LocationResponse> getLikedLocationsByUsernamePaged(String username, int page, int size) {
+        Long userId = getUser(username).getId();
+        return getLikedLocationsByUserIdPaged(userId, page, size);
+    }
+
+    public Slice<LocationResponse> getJoinedLocationsByUsernamePaged(String username, int page, int size) {
+        Long userId = getUser(username).getId();
+        return getJoinedLocationsByUserIdPaged(userId, page, size);
     }
 
     /*************************************************************************************************

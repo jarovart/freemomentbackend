@@ -5,16 +5,20 @@
 package de.jarovart.freemoment.server.controller;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LoginRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.RefreshRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.RegisterRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.ResetPasswordRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.SendEmailRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.VerifyTokenRequest;
 import de.jarovart.freemoment.server.model.dtos.response.LoginResponse;
+import de.jarovart.freemoment.server.model.dtos.response.RefreshResponse;
+import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.services.controllerservices.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +43,19 @@ public class AuthenticationController {
         log.info("POST /api/auth/login: for {}", loginRequest.username());
         LoginResponse loginDTO = authenticationService.getLoginToken(loginRequest);
         return ResponseEntity.ok().body(loginDTO);
+    }
+
+    @PostMapping("/refreshToken")
+    public RefreshResponse refresh(@RequestBody RefreshRequest request,
+                                   @AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("GET /api/auth/refresh request by {}", user.getUsername());
+        return authenticationService.refreshToken(request);
+    }
+
+    @PostMapping("/logout")
+    public void logout(@AuthenticationPrincipal JarovartUserDetails user) {
+        log.info("GET /api/auth/logout request by {}", user.getUsername());
+        authenticationService.revokeAllTokensForUser(user.getUsername());
     }
 
     @PostMapping("/register")

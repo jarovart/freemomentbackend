@@ -185,6 +185,11 @@ public class LocationService {
                 .map(loc -> locationMappingService.mapToLocationResponse(loc, userId));
     }
 
+    public Slice<LocationResponse> getCreatedLocationsByUsernamePaged(String username, int page, int size) {
+        Long userId = userService.getUser(username).getId();
+        return getCreatedLocationsByUserIdPaged(userId, page, size);
+    }
+
     /************************************************************************************************
      * Old data
      */

@@ -80,28 +80,33 @@ public class SecurityConfiguration {
                            .requestMatchers(HttpMethod.GET,
                                             "/api/info/fullStatus",
                                             "/api/users/all",
-                                            "/api/users/*/locations/created",
-                                            "/api/users/*/locations/joined",
                                             "/api/users/query",
                                             "/api/users/id",
                                             "/api/users/me",
+                                            "/api/settings/me",
+                                            "/api/users/*/locations/created", //list
+                                            "/api/users/*/locations/joined",
                                             "/api/users/*/locations/liked",
-                                            "/api/locations/*/like",
-                                            "/api/locations/*/join",
-                                            "/api/settings/me").authenticated()
+                                            "/api/locations/*/like", //action?
+                                            "/api/locations/*/join"//
+                           ).authenticated()
                            .requestMatchers(HttpMethod.DELETE,
                                             "/api/locations/*/like",
-                                            "/api/locations/*/join").authenticated()
+                                            "/api/locations/*/join")
+                           .authenticated()
                            .requestMatchers(HttpMethod.POST,
                                             "/api/images/upload",
                                             "/api/locations/createLocation",
                                             "/api/locations/*/like",
-                                            "/api/locations/*/join").authenticated()
+                                            "/api/locations/*/join" //action
+                           ).authenticated()
                            .requestMatchers(HttpMethod.PUT,
-                                            "/api/users/me").authenticated()
+                                            "/api/users/me" // update via edit?
+                           ).authenticated()
                            .requestMatchers(HttpMethod.PATCH,
                                             "/api/users/me",
-                                            "/api/locations/*").authenticated()
+                                            "/api/locations/*" // update via location edit
+                           ).authenticated()
                            .requestMatchers("/api/auth/**", "/h2-console/**", "/error").permitAll()
                            .anyRequest()
                            .authenticated())
@@ -120,6 +125,7 @@ public class SecurityConfiguration {
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

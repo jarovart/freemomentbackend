@@ -80,7 +80,46 @@ public class UserController {
         return ResponseEntity.ok(userService.getMyProfile(userDetails.getId()));
     }
 
-    @GetMapping("{userId}/locations/created")
+    @GetMapping("{username}/locations/created")
+    public ResponseEntity<Slice<LocationResponse>> getCreatedLocationsByUsernamePaged(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        log.info("GET getCreatedLocationsByUsernamePaged /api/users/{}/locations/created page={} size={}", username,
+                 page,
+                 pageSize);
+        return ResponseEntity.ok(locationService.getCreatedLocationsByUsernamePaged(username, page, pageSize));
+    }
+
+    @GetMapping("{username}/locations/liked")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Slice<LocationResponse>> getLikedLocationsByUsernamePaged(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @AuthenticationPrincipal JarovartUserDetails userDetails
+    ) {
+        log.info("GET getLikedLocationsByUsernamePaged /api/users/{}/location/liked page={} size={}", username, page,
+                 pageSize);
+        return ResponseEntity.ok(
+                userService.getLikedLocationsByUsernamePaged(username, page, pageSize)
+        );
+    }
+
+    @GetMapping("{username}/locations/joined")
+    public ResponseEntity<Slice<LocationResponse>> getJoinedLocationsByUsernamePaged(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        log.info("GET getJoinedLocationsByUsernamePaged /api/users/{}/locations/joined page={} size={}", username, page,
+                 size);
+        return ResponseEntity.ok(userService.getJoinedLocationsByUsernamePaged(username, page, size)
+        );
+    }
+
+    @GetMapping("byUserId/{userId}/locations/created")
     public ResponseEntity<Slice<LocationResponse>> getCreatedLocationsByUserIdPaged(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -92,7 +131,7 @@ public class UserController {
         );
     }
 
-    @GetMapping("{userId}/locations/liked")
+    @GetMapping("byUserId/{userId}/locations/liked")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Slice<LocationResponse>> getLikedLocationsByUserIdPaged(
             @PathVariable Long userId,
@@ -103,11 +142,11 @@ public class UserController {
         log.info("GET getLikedLocationsByUserIdPaged /api/users/{}/location/liked page={} size={}", userId, page,
                  pageSize);
         return ResponseEntity.ok(
-                userService.getLikedLocationsByUserId(userId, page, pageSize)
+                userService.getLikedLocationsByUserIdPaged(userId, page, pageSize)
         );
     }
 
-    @GetMapping("{userId}/locations/joined")
+    @GetMapping("byUserId/{userId}/locations/joined")
     public ResponseEntity<Slice<LocationResponse>> getJoinedLocationsByUserIdPaged(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -115,7 +154,7 @@ public class UserController {
     ) {
         log.info("GET getJoinedLocationsByUserIdPaged /api/users/{}/locations/joined page={} size={}", userId, page,
                  size);
-        return ResponseEntity.ok(userService.getJoinedLocationsByUserId(userId, page, size)
+        return ResponseEntity.ok(userService.getJoinedLocationsByUserIdPaged(userId, page, size)
         );
     }
 

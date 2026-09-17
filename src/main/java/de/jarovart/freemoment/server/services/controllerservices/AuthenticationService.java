@@ -1,12 +1,15 @@
 package de.jarovart.freemoment.server.services.controllerservices;
 
 import de.jarovart.freemoment.server.model.dtos.requests.LoginRequest;
+import de.jarovart.freemoment.server.model.dtos.requests.RefreshRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.RegisterRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.ResetPasswordRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.SendEmailRequest;
 import de.jarovart.freemoment.server.model.dtos.requests.VerifyTokenRequest;
 import de.jarovart.freemoment.server.model.dtos.response.LoginResponse;
+import de.jarovart.freemoment.server.model.dtos.response.RefreshResponse;
 import de.jarovart.freemoment.server.model.entities.AppUser;
+import de.jarovart.freemoment.server.model.entities.Image;
 import de.jarovart.freemoment.server.model.entities.PasswordResetToken;
 import de.jarovart.freemoment.server.model.entities.PendingUser;
 import de.jarovart.freemoment.server.model.enums.ErrorCode;
@@ -16,8 +19,10 @@ import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.repository.PasswordResetTokenRepository;
 import de.jarovart.freemoment.server.repository.PendingUserRepository;
 import de.jarovart.freemoment.server.repository.UserRepository;
+import de.jarovart.freemoment.server.services.AuthRefreshService;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.MailService;
+import de.jarovart.freemoment.server.services.RefreshTokenService;
 import de.jarovart.freemoment.server.util.Util_General;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,6 +56,10 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     private MailService mailService;
     @Autowired
+    private RefreshTokenService refreshTokenService;
+    @Autowired
+    private AuthRefreshService authRefreshService;
+    @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     public LoginResponse getLoginToken(LoginRequest loginRequest) {
@@ -61,13 +70,32 @@ public class AuthenticationService implements UserDetailsService {
                                                ErrorCode.INVALID_CREDENTIALS);
         }
         AppUser appUser = optionalAppUser.get();
-        String token = jwtService.generateToken(appUser.getUsername(),
-                                                Map.of("userId", appUser.getId(),
-                                                       "roles", appUser.getRoles()
-                                                                       .stream()
-                                                                       .map(UserRole::getRoleName)
-                                                                       .collect(Collectors.joining(","))));
-        return new LoginResponse(token, appUser.getUsername(), appUser.getId());
+        Image image = appUser.getProfileImage();
+        String myProfileUrl = image != null ? image.getUrl() : "";
+        String accessToken = jwtService.generateToken(appUser.getUsername(),
+                                                      Map.of("userId", appUser.getId(),
+                                                             "roles", appUser.getRoles()
+                                                                             .stream()
+                                                                             .map(UserRole::getRoleName)
+                                                                             .collect(Collectors.joining(","))));
+
+        String refreshToken = refreshTokenService.issueRefreshToken(appUser);
+        return new LoginResponse(appUser.getId(),
+                                 appUser.getUsername(),
+                                 myProfileUrl,
+                                 accessToken,
+                                 refreshToken);
+    }
+
+    public RefreshResponse refreshToken(RefreshRequest request) {
+        return authRefreshService.refresh(request);
+    }
+
+    public void revokeAllTokensForUser(String username) {
+        AppUser appUser = userRepository.findByUsername(username).orElseThrow(
+                () -> new ServiceResponseException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", ErrorCode.USER_NOT_FOUND));
+
+        refreshTokenService.revokeAllForUser(appUser);
     }
 
     @Transactional
