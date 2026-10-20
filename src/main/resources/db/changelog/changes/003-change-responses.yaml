@@ -1,0 +1,57 @@
+databaseChangeLog:
+- changeSet:
+    id: 1792523737668-1
+    author: Artem (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: refresh_tokensPK
+            name: id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: expires_at
+            type: TIMESTAMP(6) WITH TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: revoked
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: token_hash
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        tableName: refresh_tokens
+- changeSet:
+    id: 1792523737668-2
+    author: Artem (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: token_hash
+        constraintName: UC_REFRESH_TOKENSTOKEN_HASH_COL
+        tableName: refresh_tokens
+- changeSet:
+    id: 1792523737668-3
+    author: Artem (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: user_id
+        baseTableName: refresh_tokens
+        constraintName: FK5a9ypl7oycxycfscqnsepj5t8
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: app_user
+        validate: true
+
