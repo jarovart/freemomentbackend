@@ -42,7 +42,7 @@ public class SettingsService {
             userSetting = new UserSetting();
             userSetting.setUser(user);
         }
-        userSetting.setLanguage(LanguageEnum.from(settingsRequest.getLocale()));
+        userSetting.setLanguage(LanguageEnum.from(settingsRequest.getLanguageCode()));
         userSetting.setAppDesign(AppDesignEnum.from(settingsRequest.getDesign()));
         userSetting.setUpdatedAt(settingsRequest.getUpdatedAt());
 

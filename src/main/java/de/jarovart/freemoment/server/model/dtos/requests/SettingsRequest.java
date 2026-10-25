@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 
 @Data
 public class SettingsRequest {
-    private String locale;
+    private String languageCode;
     private String design;
     @NotNull
     private LocalDateTime updatedAt;
 
     public SettingsRequest(String locale, String design, LocalDateTime updatedAt) {
-        this.locale = locale;
+        this.languageCode = languageCode;
         this.design = design;
         this.updatedAt = updatedAt;
     }
