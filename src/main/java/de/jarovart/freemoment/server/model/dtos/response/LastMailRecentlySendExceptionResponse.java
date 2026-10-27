@@ -1,7 +1,12 @@
 package de.jarovart.freemoment.server.model.dtos.response;
 
+import java.time.LocalDateTime;
+
 public record LastMailRecentlySendExceptionResponse(
+        String code,
+        int status,
         String message,
-        long secondsUntilNextMailAllowed
+        LocalDateTime timestamp,
+        long cooldownSeconds
 ) {
 }

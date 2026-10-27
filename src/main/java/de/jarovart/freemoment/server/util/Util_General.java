@@ -1,5 +1,6 @@
 package de.jarovart.freemoment.server.util;
 
+import de.jarovart.freemoment.server.model.enums.ErrorCode;
 import de.jarovart.freemoment.server.model.exception.LastMailRecentlySendException;
 import org.springframework.http.HttpStatus;
 
@@ -18,7 +19,7 @@ public class Util_General {
             long seconds = Duration.between(lastMailSentAtSeconds, LocalDateTime.now()).getSeconds();
             if (seconds < COOLDOWN_IN_SECONDS) {
                 throw new LastMailRecentlySendException(HttpStatus.TOO_MANY_REQUESTS, COOLDOWN_IN_SECONDS - seconds,
-                                                        "Last mail has been send recently.");
+                                                        "Last mail has been sent recently.", ErrorCode.MAIL_COUNTDOWN);
             }
         }
     }

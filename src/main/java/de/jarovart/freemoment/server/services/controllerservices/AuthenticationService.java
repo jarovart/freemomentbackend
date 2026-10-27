@@ -12,13 +12,17 @@ import de.jarovart.freemoment.server.model.entities.AppUser;
 import de.jarovart.freemoment.server.model.entities.Image;
 import de.jarovart.freemoment.server.model.entities.PasswordResetToken;
 import de.jarovart.freemoment.server.model.entities.PendingUser;
+import de.jarovart.freemoment.server.model.entities.UserSetting;
+import de.jarovart.freemoment.server.model.enums.AppDesignEnum;
 import de.jarovart.freemoment.server.model.enums.ErrorCode;
+import de.jarovart.freemoment.server.model.enums.LanguageEnum;
 import de.jarovart.freemoment.server.model.enums.UserRole;
 import de.jarovart.freemoment.server.model.exception.ServiceResponseException;
 import de.jarovart.freemoment.server.model.security.JarovartUserDetails;
 import de.jarovart.freemoment.server.repository.PasswordResetTokenRepository;
 import de.jarovart.freemoment.server.repository.PendingUserRepository;
 import de.jarovart.freemoment.server.repository.UserRepository;
+import de.jarovart.freemoment.server.repository.UserSettingsRepository;
 import de.jarovart.freemoment.server.services.AuthRefreshService;
 import de.jarovart.freemoment.server.services.JwtService;
 import de.jarovart.freemoment.server.services.MailService;
@@ -61,6 +65,8 @@ public class AuthenticationService implements UserDetailsService {
     private AuthRefreshService authRefreshService;
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired
+    private UserSettingsRepository userSettingsRepository;
 
     public LoginResponse getLoginToken(LoginRequest loginRequest) {
         Optional<AppUser> optionalAppUser = userRepository.findByUsername(loginRequest.username());
@@ -142,7 +148,7 @@ public class AuthenticationService implements UserDetailsService {
         pu.setExpiresAt(LocalDateTime.now().plusHours(24));
         pu.setLastMailSentAt(LocalDateTime.now());
         pendingUserRepository.save(pu);
-        mailService.sendVerificationMail(email, token);
+        mailService.sendVerificationMail(username, email, token, registerRequest.languageCode());
     }
 
     @Transactional
@@ -172,6 +178,13 @@ public class AuthenticationService implements UserDetailsService {
         user.setIsBanned(false);
         userRepository.save(user);
         pendingUserRepository.delete(pu);
+
+        UserSetting userSetting = new UserSetting();
+        userSetting.setUser(user);
+        userSetting.setAppDesign(AppDesignEnum.SYSTEM);
+        userSetting.setLanguage(LanguageEnum.SYS);
+        userSetting.setUpdatedAt(LocalDateTime.now());
+        userSettingsRepository.save(userSetting);
     }
 
     @Transactional
@@ -184,7 +197,7 @@ public class AuthenticationService implements UserDetailsService {
 
         Optional<PendingUser> optionalPendingUser = pendingUserRepository.findByEmail(email);
         if (optionalPendingUser.isEmpty()) {
-            //log.warn("POST /api/auth/resend-verification - no pending user for email {}", email);
+            Util_General.verifyLastMailSentAtSeconds(LocalDateTime.now());
             return; // To prevent email enumeration
         }
         PendingUser pu = optionalPendingUser.get();
@@ -197,7 +210,7 @@ public class AuthenticationService implements UserDetailsService {
         pendingUserRepository.save(pu);
 
         String receiverEmail = pu.getEmail();
-        mailService.sendVerificationMail(receiverEmail, token);
+        mailService.sendVerificationMail(pu.getUsername(), receiverEmail, token, sendEmailRequest.languageCode());
     }
 
     @Transactional
@@ -212,8 +225,9 @@ public class AuthenticationService implements UserDetailsService {
         // Immer 200, auch wenn email nicht existiert (anti enumeration)
         Optional<AppUser> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
-            return;
+            Util_General.verifyLastMailSentAtSeconds(LocalDateTime.now());
         }
+        String username = optionalUser.get().getUsername();
 
         // Rate Limit (60s)
         Optional<PasswordResetToken> existingOpt = passwordResetTokenRepository.findByEmail(email);
@@ -229,7 +243,8 @@ public class AuthenticationService implements UserDetailsService {
         tokenEntity.setLastMailSentAt(LocalDateTime.now());
         tokenEntity.setUsedAt(null);
         passwordResetTokenRepository.save(tokenEntity);
-        mailService.sendPasswordResetMail(email, tokenEntity.getToken());
+        mailService.sendPasswordResetMail(username, email, tokenEntity.getToken(),
+                                          sendEmailRequest.languageCode());
     }
 
     @Transactional

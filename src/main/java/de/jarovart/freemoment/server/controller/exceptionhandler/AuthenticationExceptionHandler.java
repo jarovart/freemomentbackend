@@ -18,6 +18,10 @@ public class AuthenticationExceptionHandler {
     @ExceptionHandler(LastMailRecentlySendException.class)
     public ResponseEntity<LastMailRecentlySendExceptionResponse> handle(LastMailRecentlySendException e) {
         return ResponseEntity.status(e.getStatus())
-                             .body(new LastMailRecentlySendExceptionResponse(e.getMessage(), e.getCooldownSeconds()));
+                             .body(new LastMailRecentlySendExceptionResponse(e.getErrorCode().name(),
+                                                                             e.getStatus().value(),
+                                                                             e.getMessage(),
+                                                                             e.getTimestamp(),
+                                                                             e.getCooldownSeconds()));
     }
 }
